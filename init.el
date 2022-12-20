@@ -63,8 +63,7 @@
   (global-set-key "\C-s" 'swiper))
 (use-package counsel
   :config
-  (global-set-key (kbd "C-c m") 'counsel-imenu)
-  (global-set-key (kbd "M-x") 'counsel-M-x))
+  (counsel-mode))
 
 ;; recentf
 (recentf-mode 1)
