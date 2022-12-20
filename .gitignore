@@ -1,0 +1,9 @@
+custom.el
+.cache/
+elpa/
+transient/
+backups/
+
+eshell/
+projectile-bookmarks.eld
+recentf
