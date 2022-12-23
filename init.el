@@ -1,18 +1,4 @@
-
-(setq custom-file "~/.emacs.d/custom.el")
-
-(setq mac-option-key-is-meta nil
-      mac-command-key-is-meta t
-      mac-command-modifier 'meta
-      mac-option-modifier 'super)
-; See: https://superuser.com/questions/941286/disable-default-option-key-binding
-
-
-(setq visible-bell t)
-(tool-bar-mode 0)
-
-;; TODO: double-check that backup files are actually created
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+;; --- PRELUDE ---
 
 ;; Install and configure use-package
 (require 'package)
@@ -25,6 +11,9 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
+
+;; --- USER SETUP ---
+
 ;; ace-window
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
@@ -33,13 +22,37 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
+;; dired
+(setq dired-hide-details-mode t)
+
 ;; doom-modeline
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
 (use-package all-the-icons)
 (require 'all-the-icons)
 
-(use-package eglot)
+;; eglot
+(use-package eglot
+  :hook ((java-mode . eglot-ensure)
+         (typescript-mode . eglot-ensure))
+  :init
+  :defer t
+  :config
+  (add-to-list 'eglot-server-programs
+               '(java-mode . ("jdtls"
+                              :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t ))))))
+
+;; Emacs defaults
+(setq custom-file "~/.emacs.d/custom.el")
+(setq mac-option-key-is-meta nil
+      mac-command-key-is-meta t
+      mac-command-modifier 'meta
+      mac-option-modifier 'super)
+; See: https://superuser.com/questions/941286/disable-default-option-key-binding
+(setq column-number-mode t)
+(setq visible-bell t)
+(tool-bar-mode 0)
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
 ;; FFAP
 (global-set-key (kbd "C-c .") 'ffap)
@@ -59,11 +72,91 @@
   :config
   (ivy-mode))
 (use-package swiper
-  :config
-  (global-set-key "\C-s" 'swiper))
+  :bind
+  (("C-c s" . counsel-rg)
+   ("C-s" . swiper)))
 (use-package counsel
   :config
-  (counsel-mode))
+  (counsel-mode)
+  :bind
+  ("C-c m" . counsel-imenu))
+
+;; jq-mode
+(use-package jq-mode
+  :config
+  (add-to-list 'load-path "/path/to/jq-mode-dir")
+  (autoload 'jq-mode "jq-mode.el"
+    "Major mode for editing jq files" t)
+  (add-to-list 'auto-mode-alist '("\\.jq$" . jq-mode))
+  (with-eval-after-load "json-mode"
+    (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively)))
+
+;; kill without adding to kill-ring
+
+; Taken from https://emacs.stackexchange.com/a/22267
+(defun my-delete-word (arg)
+  "Delete characters forward until encountering the end of a word.
+With argument, do this that many times.
+This command does not push text to `kill-ring'."
+  (interactive "p")
+  (delete-region
+   (point)
+   (progn
+     (forward-word arg)
+     (point))))
+
+(defun my-backward-delete-word (arg)
+  "Delete characters backward until encountering the beginning of a word.
+With argument, do this that many times.
+This command does not push text to `kill-ring'."
+  (interactive "p")
+  (my-delete-word (- arg)))
+
+(defun my-delete-line ()
+  "Delete text from current position to end of line char.
+This command does not push text to `kill-ring'."
+  (interactive)
+  (delete-region
+   (point)
+   (progn (end-of-line 1) (point)))
+  (delete-char 1))
+
+(defun my-delete-line-backward ()
+  "Delete text between the beginning of the line to the cursor position.
+This command does not push text to `kill-ring'."
+  (interactive)
+  (let (p1 p2)
+    (setq p1 (point))
+    (beginning-of-line 1)
+    (setq p2 (point))
+    (delete-region p1 p2)))
+
+; bind them to emacs's default shortcut keys:
+(global-set-key (kbd "C-S-k") 'my-delete-line-backward)
+(global-set-key (kbd "C-k") 'my-delete-line)
+(global-set-key (kbd "M-d") 'my-delete-word)
+(global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
+
+;; multiple-cursors
+(use-package multiple-cursors
+  :bind
+   (("C-S-c C-S-c" . 'mc/edit-lines)
+   ("C->" . 'mc/mark-next-like-this)
+   ("C-<" . 'mc/mark-previous-like-this)
+   ("C-c C-<" . 'mc/mark-all-like-this)))
+
+;; org-mode
+(org-babel-do-load-languages
+'org-babel-load-languages
+'((shell . t)))
+
+(use-package ox-gfm)
+(add-to-list 'load-path "~/.emacs.d/lisp")
+(require 'ox-slack)
+
+(use-package org-bullets
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; recentf
 (recentf-mode 1)
@@ -83,19 +176,27 @@
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
+;; project.el - projectile
 (use-package projectile
   :init
   (setq projectile-project-search-path
 	'(("~/workplace/black-mamba-management" . 2)
+	  ("~/workplace/trade-wind-emr" . 2)
 	  "~/Library/CloudStorage/WorkDocsDrive-Documents")
 	projectile-switch-project-action #'projectile-vc)
   :config
   (projectile-discover-projects-in-search-path)
   :bind-keymap 
   (("C-c p" . projectile-command-map)
-   ("s-p" . projectile-command-map))
-  :bind
-  ("C-c s" . projectile-ripgrep))
+   ("s-p" . projectile-command-map)))
+
+(defun project-override (dir)
+  (let ((override (locate-dominating-file dir ".project.el")))
+    (if override
+      (cons 'vc override)
+      nil)))
+
+(add-hook 'project-find-functions #'project-override)
 
 ;; which-key
 (use-package which-key)
