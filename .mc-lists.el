@@ -3,8 +3,15 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+	backward-sexp
+	kill-region
+	my-backward-delete-word
+	my-delete-word
+	org-beginning-of-line
 	org-delete-char
+	org-end-of-line
 	org-self-insert-command
+	org-yank
 	))
 
 (setq mc/cmds-to-run-once
