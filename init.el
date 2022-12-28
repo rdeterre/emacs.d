@@ -116,10 +116,11 @@ This command does not push text to `kill-ring'."
   "Delete text from current position to end of line char.
 This command does not push text to `kill-ring'."
   (interactive)
-  (delete-region
-   (point)
-   (progn (end-of-line 1) (point)))
-  (delete-char 1))
+  (let ((cur (point))
+	(eol (progn (end-of-line 1) (point))))
+    (if (equal cur eol)
+	(delete-char 1)
+      (delete-region cur eol))))
 
 (defun my-delete-line-backward ()
   "Delete text between the beginning of the line to the cursor position.
