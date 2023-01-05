@@ -39,7 +39,7 @@
   :defer t
   :config
   (add-to-list 'eglot-server-programs
-               '(java-mode . ("jdtls"
+               '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar" "--jvm-arg=-Xbootclasspath/a:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar"
                               :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t ))))))
 
 ;; Emacs defaults
