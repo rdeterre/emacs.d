@@ -186,6 +186,34 @@ The app is chosen from your OS's preference."
     :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
+; Code to copy links out of org-mode
+; See https://emacs.stackexchange.com/a/3990
+(defun org-extract-link-url (text)
+  (string-match org-bracket-link-regexp text)
+  (substring text (match-beginning 1) (match-end 1)))
+
+(defun my-org-retrieve-url-from-point ()
+  (interactive)
+  (let* ((link-info (assoc :link (org-context)))
+         (text (when link-info
+                 ;; org-context seems to return nil if the current element
+                 ;; starts at buffer-start or ends at buffer-end
+                 (buffer-substring-no-properties (or (cadr link-info) (point-min))
+                                                 (or (caddr link-info) (point-max)))))
+	 (url (org-extract-link-url text)))
+    (if (not url)
+        (error "Not in org link")
+      (kill-new url))))
+
+(defun my-smarter-kill-ring-save ()
+  (interactive)
+  (if (region-active-p)
+      (call-interactively #'kill-ring-save)
+    (when (eq major-mode 'org-mode)
+      (call-interactively #'my-org-retrieve-url-from-point))))
+
+(global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
+
 ;; recentf
 (recentf-mode 1)
 (setq recentf-max-menu-items 25
