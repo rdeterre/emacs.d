@@ -234,14 +234,14 @@ The app is chosen from your OS's preference."
 
 ;; project.el - projectile
 (use-package projectile
-  :init
-  (setq projectile-project-search-path
-	'(("~/workplace/black-mamba-management" . 2)
-	  ("~/workplace/trade-wind-emr" . 2)
-	  "~/Library/CloudStorage/WorkDocsDrive-Documents")
-	projectile-switch-project-action #'projectile-vc)
+  :demand t
+  ;; :init
+  ;; (setq projectile-project-search-path
+  ;; 	'(("~/workplace" . 3)
+  ;; 	  "~/Library/CloudStorage/WorkDocsDrive-Documents")
+  ;; 	projectile-switch-project-action #'projectile-vc)
   :config
-  (projectile-discover-projects-in-search-path)
+  (projectile-load-known-projects)
   :bind-keymap 
   (("C-c p" . projectile-command-map)
    ("s-p" . projectile-command-map)))
