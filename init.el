@@ -76,10 +76,11 @@
   (("C-c s" . counsel-rg)
    ("C-s" . swiper)))
 (use-package counsel
+  :bind
+  ("C-c m" . counsel-imenu)
   :config
   (counsel-mode)
-  :bind
-  ("C-c m" . counsel-imenu))
+  :demand t)
 
 ;; jq-mode
 (use-package jq-mode
