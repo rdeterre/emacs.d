@@ -291,7 +291,24 @@ The app is chosen from your OS's preference."
 (global-set-key (kbd "C-c r") 'restart-emacs)
 
 (use-package magit)
-(setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+;(setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+
+(setq magit-display-buffer-function
+      (lambda (buffer)
+        (display-buffer
+         buffer
+         (cond ((and (derived-mode-p 'magit-mode)
+                     (eq (with-current-buffer buffer major-mode)
+                         'magit-status-mode))
+                nil)
+               ((memq (with-current-buffer buffer major-mode)
+                      '(magit-process-mode
+                        magit-revision-mode
+                        magit-diff-mode
+                        magit-stash-mode))
+                nil)
+               (t
+                '(display-buffer-same-window))))))
 
 (defun open-init-file ()
   "Open the init file."
