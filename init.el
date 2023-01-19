@@ -345,6 +345,14 @@ The app is chosen from your OS's preference."
 ;; scala
 (use-package scala-mode)
 
+;; shell-pop
+(use-package shell-pop
+  :init
+  (setq shell-pop-term-shell "eshell")
+  (setq shell-pop-shell-type '("eshell" "eshell" (lambda () (eshell))))
+  :bind
+  (("C-t" . shell-pop)))
+
 ;; which-key
 (use-package which-key)
 (require 'which-key)
