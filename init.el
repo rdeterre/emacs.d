@@ -22,6 +22,9 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
+;; default indentation
+(setq-default indent-tabs-mode nil)
+
 ;; dired
 (setq dired-hide-details-mode t)
 
