@@ -234,6 +234,17 @@ The app is chosen from your OS's preference."
 'org-babel-load-languages
 '((shell . t)))
 
+(use-package ob-mermaid)
+
+; Don't ask confirmation to evaluate some code blocks
+(defun my-org-confirm-babel-evaluate (lang body)
+  (not (string= lang "mermaid")))
+(setq org-confirm-babel-evaluate #'my-org-confirm-babel-evaluate)
+
+; Live refresh inline images
+(eval-after-load 'org
+  (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
+
 (use-package ox-gfm)
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (require 'ox-slack)
