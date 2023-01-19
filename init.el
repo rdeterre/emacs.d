@@ -316,6 +316,8 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
+;; prettier-js
+(use-package prettier-js)
 ;; project.el - projectile
 (use-package projectile
   :demand t
