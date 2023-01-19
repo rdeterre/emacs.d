@@ -58,6 +58,11 @@
 (tool-bar-mode 0)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
+;; exec-path-from-shell
+(use-package exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize))
+
 ;; FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
