@@ -353,6 +353,9 @@ The app is chosen from your OS's preference."
   :bind
   (("C-t" . shell-pop)))
 
+;; smartparens
+(use-package smartparens)
+
 ;; which-key
 (use-package which-key)
 (require 'which-key)
