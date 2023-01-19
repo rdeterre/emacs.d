@@ -43,7 +43,8 @@
   :config
   (add-to-list 'eglot-server-programs
                '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar" "--jvm-arg=-Xbootclasspath/a:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar"
-                              :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t ))))))
+                              :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t )))))
+  :bind (("C-c a" . eglot-code-actions)))
 
 ;; Emacs defaults
 (setq custom-file "~/.emacs.d/custom.el")
