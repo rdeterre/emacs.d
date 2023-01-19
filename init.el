@@ -369,3 +369,6 @@ The app is chosen from your OS's preference."
 (use-package which-key)
 (require 'which-key)
 (which-key-mode)
+
+;; whitespace-mode
+(global-set-key (kbd "C-c w") #'whitespace-mode)
