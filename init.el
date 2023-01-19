@@ -342,6 +342,9 @@ The app is chosen from your OS's preference."
 
 (add-hook 'project-find-functions #'project-override)
 
+;; scala
+(use-package scala-mode)
+
 ;; which-key
 (use-package which-key)
 (require 'which-key)
