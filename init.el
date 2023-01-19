@@ -213,6 +213,22 @@ The app is chosen from your OS's preference."
        ((string-equal system-type "gnu/linux")
         (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) )))
 
+; see http://blog.binchen.org/posts/open-url-in-emacs-with-external-browser/
+(setq browse-url-generic-program
+      (cond
+       ((eq system-type 'darwin) "open")
+       (linux (executable-find "firefox"))
+       ))
+(defun w3mext-open-link-or-image-or-url ()
+  "Opens the current link or image or current page's uri or any url-like text under cursor in firefox."
+  (interactive)
+  (let (url)
+    (if (string= major-mode "w3m-mode")
+        (setq url (or (w3m-anchor) (w3m-image) w3m-current-url)))
+    (browse-url-generic (if url url (car (browse-url-interactive-arg "URL: "))))
+    ))
+(global-set-key (kbd "C-c b") 'w3mext-open-link-or-image-or-url)
+
 ;; org-mode
 (org-babel-do-load-languages
 'org-babel-load-languages
