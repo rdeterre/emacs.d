@@ -22,6 +22,9 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
+;; dart
+(use-package dart-mode)
+
 ;; default indentation
 (setq-default indent-tabs-mode nil)
 
