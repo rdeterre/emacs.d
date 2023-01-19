@@ -86,6 +86,37 @@
   (counsel-mode)
   :demand t)
 
+; https://timmydouglas.com/2020/12/17/eshell-counsel.html
+(defun timmy/counsel-eshell-history-action (cmd)
+  "Insert cmd into the buffer"
+  (interactive)
+  (insert cmd))
+(defun timmy/counsel-eshell-history (&optional initial-input)
+  "Find command from eshell history.
+INITIAL-INPUT can be given as the initial minibuffer input."
+  (interactive)
+    (ivy-read "Find cmd: " (timmy/eshell-history-list)
+              :initial-input initial-input
+              :action #'timmy/counsel-eshell-history-action
+              :caller 'timmy/counsel-eshell-history))
+(defun timmy/eshell-history-list ()
+  "return the eshell history as a list"
+  (and (or (not (ring-p eshell-history-ring))
+	   (ring-empty-p eshell-history-ring))
+       (error "No history"))
+  (let* ((index (1- (ring-length eshell-history-ring)))
+	 (ref (- (ring-length eshell-history-ring) index))
+	 (items (list)))
+    (while (>= index 0)
+      (setq items (cons (format "%s" (eshell-get-history index)) items)
+	    index (1- index)
+	    ref (1+ ref)))
+    items))
+
+(use-package esh-mode
+  :ensure nil
+  :bind (:map eshell-mode-map
+	      ("C-r" . timmy/counsel-eshell-history)))
 ;; jq-mode
 (use-package jq-mode
   :config
