@@ -318,19 +318,21 @@ The app is chosen from your OS's preference."
 
 ;; prettier-js
 (use-package prettier-js)
+
 ;; project.el - projectile
 (use-package projectile
   :demand t
-  ;; :init
+  :init
   ;; (setq projectile-project-search-path
   ;; 	'(("~/workplace" . 3)
   ;; 	  "~/Library/CloudStorage/WorkDocsDrive-Documents")
-  ;; 	projectile-switch-project-action #'projectile-vc)
+  (setq projectile-switch-project-action #'projectile-vc)
   :config
   (projectile-load-known-projects)
   :bind-keymap 
   (("C-c p" . projectile-command-map)
    ("s-p" . projectile-command-map)))
+(global-set-key (kbd "C-'") 'projectile-run-eshell)
 
 (defun project-override (dir)
   (let ((override (locate-dominating-file dir ".project.el")))
