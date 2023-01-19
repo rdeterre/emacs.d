@@ -117,6 +117,11 @@ INITIAL-INPUT can be given as the initial minibuffer input."
   :ensure nil
   :bind (:map eshell-mode-map
 	      ("C-r" . timmy/counsel-eshell-history)))
+
+;; javascript
+(setq js-indent-level 2)
+(setq-default js2-basic-offset 2)
+
 ;; jq-mode
 (use-package jq-mode
   :config
