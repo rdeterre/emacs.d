@@ -356,6 +356,15 @@ The app is chosen from your OS's preference."
 ;; smartparens
 (use-package smartparens)
 
+;; typescript-mode
+(use-package typescript-mode)
+
+(defun typescript-settings-fn ()
+  (setq typescript-indent-level 2)
+  (setq indent-tabs-mode nil)
+  (setq tab-width 2))
+(add-hook 'typescript-mode-hook 'typescript-settings-fn)
+
 ;; which-key
 (use-package which-key)
 (require 'which-key)
