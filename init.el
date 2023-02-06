@@ -20,6 +20,10 @@
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
 
+;; asdf
+(require 'asdf)
+(asdf-enable)
+
 ;; crux
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
