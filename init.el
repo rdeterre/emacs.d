@@ -11,6 +11,8 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
+(add-to-list 'load-path "~/.emacs.d/lisp")
+
 
 ;; --- USER SETUP ---
 
