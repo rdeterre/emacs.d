@@ -75,6 +75,10 @@
 ;; FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
+;; fonts
+(require 'init-fonts)
+
+;; git auto-commit
 (use-package git-auto-commit-mode)
 
 ;; golden-ratio-scroll-screen
@@ -260,7 +264,6 @@ The app is chosen from your OS's preference."
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
 
 (use-package ox-gfm)
-(add-to-list 'load-path "~/.emacs.d/lisp")
 (require 'ox-slack)
 
 (use-package org-bullets
