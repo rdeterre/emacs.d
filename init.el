@@ -31,6 +31,9 @@
 ;; dart
 (use-package dart-mode)
 
+;; dead-keys
+(setq ns-right-alternate-modifier 'none)
+
 ;; default indentation
 (setq-default indent-tabs-mode nil)
 
