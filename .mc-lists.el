@@ -5,11 +5,13 @@
       '(
         backward-sexp
         forward-sexp
+        indent-for-tab-command
         kill-region
         my-backward-delete-word
         my-delete-line
         my-delete-word
         org-beginning-of-line
+        org-cycle
         org-delete-char
         org-end-of-line
         org-self-insert-command
