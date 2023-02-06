@@ -389,3 +389,11 @@ The app is chosen from your OS's preference."
 
 ;; whitespace-mode
 (global-set-key (kbd "C-c w") #'whitespace-mode)
+
+;; ;; winner-mode
+;; (use-package winner-mode
+;;   :config
+;;   (winner-mode)
+;;   :bind
+;;   (("C-c <left>" . winner-undo)
+;;    ("C-c <right>" . winner-redo)))
