@@ -292,6 +292,8 @@ The app is chosen from your OS's preference."
         (error "Not in org link")
       (kill-new url))))
 
+(require 'org-drawio)
+
 (defun my-smarter-kill-ring-save ()
   (interactive)
   (if (region-active-p)
