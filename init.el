@@ -143,6 +143,10 @@ handle it. If it is not a jar call ORIGINAL-FN."
 ;; FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
+;; flymake
+(global-set-key (kbd "M-n") 'flymake-goto-next-error)
+(global-set-key (kbd "M-p") 'flymake-goto-prev-error)
+
 ;; fonts
 (require 'init-fonts)
 
