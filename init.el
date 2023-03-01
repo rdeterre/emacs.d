@@ -414,9 +414,8 @@ The app is chosen from your OS's preference."
 (use-package projectile
   :demand t
   :init
-  ;; (setq projectile-project-search-path
-  ;; 	'(("~/workplace" . 3)
-  ;; 	  "~/Library/CloudStorage/WorkDocsDrive-Documents")
+  (setq projectile-project-search-path
+	'("~/Documents"))
   (setq projectile-switch-project-action #'projectile-vc)
   :config
   (projectile-load-known-projects)
