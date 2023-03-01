@@ -49,7 +49,8 @@
 ;; eglot
 (use-package eglot
   :hook ((java-mode . eglot-ensure)
-         (typescript-mode . eglot-ensure))
+         (typescript-mode . eglot-ensure)
+         (rust-mode . eglot-ensure))
   :init
   :defer t
   :config
@@ -58,6 +59,8 @@
                '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar"
                                             :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t ))))
 )
+  (add-to-list 'eglot-server-programs
+               '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
 
 ;; The jdt server sometimes returns jdt:// scheme for jumping to definition
@@ -431,6 +434,9 @@ The app is chosen from your OS's preference."
       nil)))
 
 (add-hook 'project-find-functions #'project-override)
+
+;; rust
+(use-package rust-mode)
 
 ;; scala
 (use-package scala-mode
