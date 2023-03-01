@@ -101,7 +101,7 @@ Argument _BACKEND refers to export backend."
 
 (defun org-drawio-save-image (drawio-path png-path)
   "Extract from DRAWIO-PATH a .png and write it to PNG-PATH."
-  (let ((image (create-image (org-drawio-extract-png DRAWIO-path) 'png t)))
+  (let ((image (create-image (org-drawio-extract-png drawio-path) 'png t)))
     (with-temp-buffer
       (insert (plist-get (cdr image) :data))
       (write-region (point-min) (point-max) png-path))))
