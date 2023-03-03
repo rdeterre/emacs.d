@@ -211,6 +211,12 @@ INITIAL-INPUT can be given as the initial minibuffer input."
   :bind (:map eshell-mode-map
 	      ("C-r" . timmy/counsel-eshell-history)))
 
+;; java
+(add-hook 'java-mode-hook
+          (lambda ()
+            (set-fill-column 120)
+            (display-fill-column-indicator-mode t)))
+
 ;; javascript
 (setq js-indent-level 2)
 (setq-default js2-basic-offset 2)
