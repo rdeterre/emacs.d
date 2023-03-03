@@ -428,6 +428,7 @@ The app is chosen from your OS's preference."
   (setq projectile-switch-project-action #'projectile-vc)
   :config
   (projectile-load-known-projects)
+  (projectile-commander-bindings)
   :bind-keymap 
   (("C-c p" . projectile-command-map)
    ("s-p" . projectile-command-map)))
