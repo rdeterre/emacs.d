@@ -496,3 +496,6 @@ The app is chosen from your OS's preference."
 
 ;; winner-mode
 (winner-mode)
+
+;; yaml-mode
+(use-package yaml-mode)
