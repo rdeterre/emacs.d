@@ -4,6 +4,7 @@
 (setq mc/cmds-to-run-for-all
       '(
         backward-sexp
+        c-electric-semi&comma
         forward-sexp
         indent-for-tab-command
         kill-region
