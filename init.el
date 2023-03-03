@@ -153,6 +153,9 @@ handle it. If it is not a jar call ORIGINAL-FN."
 ;; fonts
 (require 'init-fonts)
 
+;; groovy
+(use-package groovy-mode)
+
 ;; git auto-commit
 (use-package git-auto-commit-mode)
 
