@@ -446,7 +446,15 @@ The app is chosen from your OS's preference."
   :bind-keymap 
   (("C-c p" . projectile-command-map)
    ("s-p" . projectile-command-map)))
-(global-set-key (kbd "C-'") 'projectile-run-eshell)
+
+
+(defun projectile-shell-pop ()
+  "Pop-up a shell buffer at the project root. Stolen from spacemacs "
+  (interactive)
+  (let ((default-directory (projectile-acquire-root)))
+    (call-interactively 'shell-pop)))
+
+(global-set-key (kbd "C-'") 'projectile-shell-pop)
 
 (defun project-override (dir)
   (let ((override (locate-dominating-file dir ".project.el")))
