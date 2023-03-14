@@ -343,13 +343,15 @@ The app is chosen from your OS's preference."
 ;; org-mode
 (org-babel-do-load-languages
 'org-babel-load-languages
-'((shell . t)))
+'((shell . t)
+  (eshell . t)
+  (python . t)))
 
 (use-package ob-mermaid)
 
 ; Don't ask confirmation to evaluate some code blocks
 (defun my-org-confirm-babel-evaluate (lang body)
-  (not (string= lang "mermaid")))
+  (not (member lang (list "mermaid" "eshell" "python"))))
 (setq org-confirm-babel-evaluate #'my-org-confirm-babel-evaluate)
 
 ; Live refresh inline images
