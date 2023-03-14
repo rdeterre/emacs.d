@@ -338,7 +338,7 @@ The app is chosen from your OS's preference."
         (setq url (or (w3m-anchor) (w3m-image) w3m-current-url)))
     (browse-url-generic (if url url (car (browse-url-interactive-arg "URL: "))))
     ))
-(global-set-key (kbd "C-c b") 'w3mext-open-link-or-image-or-url)
+(global-set-key (kbd "C-c b") 'browse-url-at-point)
 
 ;; org-mode
 (org-babel-do-load-languages
