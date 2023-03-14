@@ -63,6 +63,13 @@
                '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
 
+;;; eclipse-jdt breaks the spec which in turn breaks code actions
+;;; This behaviour can't be disabled and needs to be worked around
+(cl-defmethod eglot-execute-command
+  (_server (_cmd (eql java.apply.workspaceEdit)) arguments)
+  "Eclipse JDT breaks spec and replies with edits as arguments."
+  (mapc #'eglot--apply-workspace-edit arguments))
+
 ;; The jdt server sometimes returns jdt:// scheme for jumping to definition
 ;; instead of returning a file. This is not part of LSP and eglot does not
 ;; handle it. The following code enables eglot to handle jdt files.
