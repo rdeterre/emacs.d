@@ -221,6 +221,8 @@ INITIAL-INPUT can be given as the initial minibuffer input."
   :bind (:map eshell-mode-map
 	      ("C-r" . timmy/counsel-eshell-history)))
 
+(global-set-key (kbd "C-c u") 'counsel-unicode-char)
+
 ;; java
 (add-hook 'java-mode-hook
           (lambda ()
