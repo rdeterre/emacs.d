@@ -12,6 +12,7 @@
         my-backward-delete-word
         my-delete-line
         my-delete-word
+        my-smarter-kill-ring-save
         org-beginning-of-line
         org-cycle
         org-delete-char
