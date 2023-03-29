@@ -348,6 +348,10 @@ The app is chosen from your OS's preference."
   (eshell . t)
   (python . t)))
 
+; Disable indentation in code blocks
+(setq org-src-preserve-indentation nil
+      org-edit-src-content-indentation 0)
+
 (use-package ob-mermaid)
 
 ; Don't ask confirmation to evaluate some code blocks
