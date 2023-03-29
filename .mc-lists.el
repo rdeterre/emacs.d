@@ -6,9 +6,12 @@
         backward-sexp
         c-electric-delete-forward
         c-electric-semi&comma
+        c-indent-line-or-region
+        counsel-M-x
         forward-sexp
         indent-for-tab-command
         kill-region
+        markdown-outdent-or-delete
         my-backward-delete-word
         my-delete-line
         my-delete-word
