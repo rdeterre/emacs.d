@@ -62,6 +62,7 @@
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
+(global-set-key (kbd "C-c n") 'eglot-rename)
 
 ;;; eclipse-jdt breaks the spec which in turn breaks code actions
 ;;; This behaviour can't be disabled and needs to be worked around
