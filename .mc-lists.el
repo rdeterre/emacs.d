@@ -22,8 +22,10 @@
         org-end-of-line
         org-self-insert-command
         org-yank
+        wdired--self-insert
         ))
 
 (setq mc/cmds-to-run-once
       '(
+        open-init-file
         ))
