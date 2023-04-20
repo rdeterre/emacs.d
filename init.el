@@ -494,6 +494,7 @@ The app is chosen from your OS's preference."
   :init
   (setq shell-pop-term-shell "eshell")
   (setq shell-pop-shell-type '("eshell" "eshell" (lambda () (eshell))))
+  (setq shell-pop-window-position "full")
   :bind
   (("C-t" . shell-pop)))
 (add-hook 'dired-mode-hook (lambda () (local-set-key (kbd "C-t") #'shell-pop)))
