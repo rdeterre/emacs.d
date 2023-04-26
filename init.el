@@ -12,6 +12,8 @@
 (setq use-package-always-ensure t)
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
+(add-to-list 'load-path "~/Documents/axe")
+(require 'axe)
 
 
 ;; --- USER SETUP ---
@@ -19,6 +21,9 @@
 ;; ace-window
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
+
+;; Amazon
+(require 'amz-common)
 
 ;; asdf
 (require 'asdf)
@@ -55,10 +60,8 @@
   :defer t
   :config
   (add-to-list 'eglot-server-programs
-;               '(java-mode . ("/Users/rdeterre/Downloads/jdt-language-server-1.20.0-202302201605/bin/jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar" "--jvm-arg=-Xbootclasspath/a:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar"
-               '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar"
-                                            :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t ))))
-)
+               '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar" "-java.format.settings.url:https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml"
+                              :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t )))))
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
@@ -161,6 +164,9 @@ handle it. If it is not a jar call ORIGINAL-FN."
 ;; fonts
 (require 'init-fonts)
 
+;; graphviz
+(use-package graphviz-dot-mode)
+
 ;; groovy
 (use-package groovy-mode)
 
@@ -231,8 +237,8 @@ INITIAL-INPUT can be given as the initial minibuffer input."
             (display-fill-column-indicator-mode t)))
 
 ;; javascript
-(setq js-indent-level 2)
-(setq-default js2-basic-offset 2)
+(setq js-indent-level 4)
+(setq-default js2-basic-offset 4)
 
 ;; jq-mode
 (use-package jq-mode
@@ -443,7 +449,8 @@ The app is chosen from your OS's preference."
   :demand t
   :init
   (setq projectile-project-search-path
-	'("~/Documents"))
+	'(("~/workplace" . 3)
+	  "~/Library/CloudStorage/WorkDocsDrive-Documents"))
   (setq projectile-switch-project-action #'projectile-find-file)
   :config
   (projectile-load-known-projects)
@@ -503,13 +510,19 @@ The app is chosen from your OS's preference."
 (use-package smartparens)
 
 ;; typescript-mode
-(use-package typescript-mode)
+;(use-package web-mode)
+;; (define-derived-mode typescriptreact-mode web-mode "TypescriptReact"
+;;   "A major mode for tsx.")
 
-(defun typescript-settings-fn ()
-  (setq typescript-indent-level 2)
-  (setq indent-tabs-mode nil)
-  (setq tab-width 2))
-(add-hook 'typescript-mode-hook 'typescript-settings-fn)
+(use-package typescript-mode
+  :mode (("\\.ts\\'" . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
+
+;; (defun typescript-settings-fn ()
+;;   (setq typescript-indent-level 2)
+;;   (setq indent-tabs-mode nil)
+;;   (setq tab-width 2))
+;; (add-hook 'typescript-mode-hook 'typescript-settings-fn)
 
 ;; which-key
 (use-package which-key)
