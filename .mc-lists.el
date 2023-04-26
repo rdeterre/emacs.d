@@ -20,6 +20,7 @@
         org-cycle
         org-delete-char
         org-end-of-line
+        org-return-and-maybe-indent
         org-self-insert-command
         org-yank
         wdired--self-insert
