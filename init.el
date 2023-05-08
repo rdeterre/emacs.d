@@ -154,6 +154,11 @@ handle it. If it is not a jar call ORIGINAL-FN."
   :config
   (exec-path-from-shell-initialize))
 
+;; expand-region
+(use-package expand-region
+  :bind (("C-=" . er/expand-region)))
+
+
 ;; FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
