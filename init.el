@@ -137,6 +137,9 @@ handle it. If it is not a jar call ORIGINAL-FN."
 ; invoke
 (jdthandler-patch-eglot)
 
+;; Go
+(use-package go-mode)
+
 ;; Emacs defaults
 (setq custom-file "~/.emacs.d/custom.el")
 (setq mac-option-key-is-meta nil
