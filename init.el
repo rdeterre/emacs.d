@@ -12,8 +12,8 @@
 (setq use-package-always-ensure t)
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
-(add-to-list 'load-path "~/Documents/axe")
-(require 'axe)
+;(add-to-list 'load-path "~/Documents/axe")
+;(require 'axe)
 
 
 ;; --- USER SETUP ---
