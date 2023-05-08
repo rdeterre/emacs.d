@@ -22,9 +22,6 @@
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
 
-;; Amazon
-(require 'amz-common)
-
 ;; asdf
 (require 'asdf)
 (asdf-enable)
@@ -470,8 +467,7 @@ The app is chosen from your OS's preference."
   :demand t
   :init
   (setq projectile-project-search-path
-	'(("~/workplace" . 3)
-	  "~/Library/CloudStorage/WorkDocsDrive-Documents"))
+	'("~/Documents"))
   (setq projectile-switch-project-action #'projectile-find-file)
   :config
   (projectile-load-known-projects)
