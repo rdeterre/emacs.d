@@ -62,12 +62,25 @@
   :defer t
   :config
   (add-to-list 'eglot-server-programs
-               '(java-mode . ("jdtls" "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.22025.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.24.jar" "-java.format.settings.url:https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml"
+               '(java-mode .
+                           ("jdtls"
+                            "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.27054.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.26.jar"
+                            "-java.format.settings.url:https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml"
+                            "-java.format.settings.profile:GoogleStyle"
                               :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t )))))
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
 (global-set-key (kbd "C-c n") 'eglot-rename)
+;; (setq eglot-workspace-configuration
+;;       '(
+;;          ("java.format.settings.url" . "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml")
+;;          ("java.format.settings.profile" . "GoogleStyle")))
+
+;; (setq eglot-workspace-configuration
+;;             `(("java.format.settings.url" . "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml")))
+
+; NOTE: eglot passes tab-width along with formatting requests
 
 ;;; eclipse-jdt breaks the spec which in turn breaks code actions
 ;;; This behaviour can't be disabled and needs to be worked around
