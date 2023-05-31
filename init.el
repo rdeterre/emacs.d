@@ -48,6 +48,11 @@
 (use-package all-the-icons)
 (require 'all-the-icons)
 
+;; editorconfig
+(use-package editorconfig
+  :config
+  (editorconfig-mode 1))
+
 ;; eglot
 (use-package eglot
   :hook ((java-mode . eglot-ensure)
