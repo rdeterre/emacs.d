@@ -384,6 +384,9 @@ The app is chosen from your OS's preference."
 (global-set-key (kbd "C-c b") 'browse-url-at-point)
 
 ;; org-mode
+(global-set-key (kbd "C-c l") #'org-store-link)
+(global-set-key (kbd "C-c g") #'org-agenda)
+(global-set-key (kbd "C-c c") #'org-capture)
 (org-babel-do-load-languages
 'org-babel-load-languages
 '((shell . t)
