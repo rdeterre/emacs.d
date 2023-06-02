@@ -440,6 +440,13 @@ The app is chosen from your OS's preference."
 
 (require 'org-drawio)
 
+(defun org-quip-link-paste ()
+  (interactive)
+  (let* ((link (current-kill 0))
+         (path (car (last (split-string link "/")))))
+    (insert (format "[[%s][%s]]" link path))))
+(define-key org-mode-map (kbd "C-c k") #'org-quip-link-paste)
+
 (defun my-smarter-kill-ring-save ()
   (interactive)
   (if (region-active-p)
