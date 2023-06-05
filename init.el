@@ -494,10 +494,9 @@ The app is chosen from your OS's preference."
 (use-package projectile
   :demand t
   :init
-  (setq projectile-project-search-path
-	'("~/Documents"))
   (setq projectile-switch-project-action #'projectile-find-file)
   :config
+  (projectile-mode +1)
   (projectile-load-known-projects)
   (projectile-commander-bindings)
   :bind-keymap 
