@@ -272,10 +272,6 @@ INITIAL-INPUT can be given as the initial minibuffer input."
             (set-fill-column 120)
             (display-fill-column-indicator-mode t)))
 
-;; javascript
-(setq js-indent-level 4)
-(setq-default js2-basic-offset 4)
-
 ;; jq-mode
 (use-package jq-mode
   :config
