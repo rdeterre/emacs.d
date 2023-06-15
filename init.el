@@ -167,6 +167,9 @@ handle it. If it is not a jar call ORIGINAL-FN."
 (tool-bar-mode 0)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
+;; Emacs Everywhere
+(use-package emacs-everywhere)
+
 ;; exec-path-from-shell
 (use-package exec-path-from-shell
   :config
