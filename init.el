@@ -26,6 +26,9 @@
 (require 'asdf)
 (asdf-enable)
 
+;; beginning-of-line-text
+(global-set-key "\M-m" 'beginning-of-line-text)
+
 ;; crux
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
