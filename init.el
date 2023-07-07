@@ -458,6 +458,24 @@ The app is chosen from your OS's preference."
 
 (global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
 
+;; org-roam
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/org/roam")
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c d t" . org-roam-dailies-goto-today)
+         ("C-c d y" . org-roam-dailies-goto-yesterday)
+         :map org-mode-map
+         ("C-M-i"    . completion-at-point))
+  :config
+  (org-roam-setup))
+
 ;; recentf
 (recentf-mode 1)
 (setq recentf-max-menu-items 25
