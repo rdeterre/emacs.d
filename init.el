@@ -272,6 +272,9 @@ INITIAL-INPUT can be given as the initial minibuffer input."
 
 (global-set-key (kbd "C-c u") 'counsel-unicode-char)
 
+(use-package counsel-projectile
+  :config (counsel-projectile-mode t))
+
 ;; java
 (add-hook 'java-mode-hook
           (lambda ()
