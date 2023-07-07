@@ -74,7 +74,7 @@
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
   :bind (("C-c a" . eglot-code-actions)))
-(global-set-key (kbd "C-c n") 'eglot-rename)
+(global-set-key (kbd "C-c e") 'eglot-rename)
 ;; (setq eglot-workspace-configuration
 ;;       '(
 ;;          ("java.format.settings.url" . "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml")
