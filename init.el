@@ -577,6 +577,9 @@ The app is chosen from your OS's preference."
 ;; smartparens
 (use-package smartparens)
 
+;; smithy
+(use-package smithy-mode)
+
 ;; typescript-mode
 ;(use-package web-mode)
 ;; (define-derived-mode typescriptreact-mode web-mode "TypescriptReact"
