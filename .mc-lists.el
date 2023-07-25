@@ -8,6 +8,8 @@
         c-electric-semi&comma
         c-indent-line-or-region
         counsel-M-x
+        default-indent-new-line
+        electric-newline-and-maybe-indent
         forward-sexp
         indent-for-tab-command
         kill-region
