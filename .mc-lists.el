@@ -4,6 +4,7 @@
 (setq mc/cmds-to-run-for-all
       '(
         backward-sexp
+        beginning-of-line-text
         c-electric-delete-forward
         c-electric-semi&comma
         c-indent-line-or-region
@@ -22,9 +23,12 @@
         org-cycle
         org-delete-char
         org-end-of-line
+        org-force-self-insert
+        org-metaright
         org-return-and-maybe-indent
         org-self-insert-command
         org-yank
+        swiper
         wdired--self-insert
         ))
 
