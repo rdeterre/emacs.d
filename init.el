@@ -36,6 +36,10 @@
 ;; dart
 (use-package dart-mode)
 
+;; deadgrep
+(use-package deadgrep
+  :bind (("C-s-s" . #'deadgrep)))
+
 ;; dead-keys
 (setq ns-right-alternate-modifier 'none)
 
