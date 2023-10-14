@@ -293,6 +293,11 @@ INITIAL-INPUT can be given as the initial minibuffer input."
             (set-fill-column 120)
             (display-fill-column-indicator-mode t)))
 
+;; javascript
+(add-hook 'typescript-mode
+          (lambda ()
+            (setq comment-line-break-function 'c-indent-new-comment-line)))
+
 ;; jq-mode
 (use-package jq-mode
   :config
