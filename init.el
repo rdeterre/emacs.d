@@ -605,6 +605,9 @@ The app is chosen from your OS's preference."
 ;;   (setq tab-width 2))
 ;; (add-hook 'typescript-mode-hook 'typescript-settings-fn)
 
+;; typst
+(use-package typst-mode)
+
 ;; which-key
 (use-package which-key)
 (require 'which-key)
