@@ -29,6 +29,9 @@
 ;; beginning-of-line-text
 (global-set-key "\M-m" 'beginning-of-line-text)
 
+;; compile
+(global-set-key (kbd "C-c k") 'compile)
+
 ;; crux
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
