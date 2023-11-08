@@ -21,6 +21,7 @@
         my-smarter-kill-ring-save
         org-beginning-of-line
         org-cycle
+        org-cycle-agenda-files
         org-delete-char
         org-end-of-line
         org-force-self-insert
