@@ -358,6 +358,9 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "M-d") 'my-delete-word)
 (global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
 
+;; markdown-mode
+(use-package markdown-mode)
+
 ;; multiple-cursors
 (use-package multiple-cursors
   :bind
