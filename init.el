@@ -57,6 +57,9 @@
 ;; dired
 (setq dired-hide-details-mode t)
 
+;; Dockerfiles
+(use-package dockerfile-mode)
+
 ;; doom-modeline
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
