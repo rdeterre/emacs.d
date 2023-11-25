@@ -1,8 +1,11 @@
 custom.el
 .cache/
 elpa/
+straight/
 transient/
 backups/
+games/
+tramp
 
 eshell/
 projectile-bookmarks.eld
