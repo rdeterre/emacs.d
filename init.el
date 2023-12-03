@@ -16,6 +16,29 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
+(straight-use-package 'org)
+
+; Install MELPA
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(if (string-match-p "aarch64" system-configuration)
+    (setq arch "aarch64")
+  (setq arch "x86_64"))
+
+(setq system
+      (pcase system-type
+        (darwin "macOS")
+        (gnu/linux "Linux")
+        (windows-nt "Windows")
+        (_ "Unknown")))
+
+(setq treesit-extra-load-path
+      (list
+       (concat
+        (file-name-directory user-init-file)
+        "tree-sitter-grammars/" system "/" arch)))
+
 (add-to-list 'load-path "~/.emacs.d/lisp")
 ;(add-to-list 'load-path "~/Documents/axe")
 ;(require 'axe)
@@ -280,10 +303,10 @@ INITIAL-INPUT can be given as the initial minibuffer input."
 	    ref (1+ ref)))
     items))
 
-(use-package esh-mode
-  :ensure nil
-  :bind (:map eshell-mode-map
-	      ("C-r" . timmy/counsel-eshell-history)))
+;; (use-package esh-mode
+;;   :ensure nil
+;;   :bind (:map eshell-mode-map
+;; 	      ("C-r" . timmy/counsel-eshell-history)))
 
 (global-set-key (kbd "C-c u") 'counsel-unicode-char)
 
