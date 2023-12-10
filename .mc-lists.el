@@ -11,6 +11,7 @@
         counsel-M-x
         default-indent-new-line
         electric-newline-and-maybe-indent
+        end-of-buffer
         forward-sexp
         indent-for-tab-command
         kill-region
@@ -31,6 +32,7 @@
         org-yank
         swiper
         wdired--self-insert
+        yaml-electric-backspace
         ))
 
 (setq mc/cmds-to-run-once
