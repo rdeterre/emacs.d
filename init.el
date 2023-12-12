@@ -60,6 +60,9 @@
 ;; compile
 (global-set-key (kbd "C-c k") 'compile)
 
+;; coverlay
+(use-package coverlay)
+
 ;; crux
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
@@ -97,7 +100,7 @@
 ;; eglot
 (use-package eglot
   :hook ((java-mode . eglot-ensure)
-         (typescript-mode . eglot-ensure)
+         (TSX . eglot-ensure)
          (rust-mode . eglot-ensure))
   :init
   :defer t
@@ -111,6 +114,8 @@
                               :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t )))))
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
+  (add-to-list 'eglot-server-programs
+               '(TSX . ("typescript-language-server" "--stdio")))
   :bind (("C-c a" . eglot-code-actions)))
 (global-set-key (kbd "C-c e") 'eglot-rename)
 ;; (setq eglot-workspace-configuration
@@ -629,20 +634,12 @@ The app is chosen from your OS's preference."
 ;; smithy
 (use-package smithy-mode)
 
-;; typescript-mode
-;(use-package web-mode)
-;; (define-derived-mode typescriptreact-mode web-mode "TypescriptReact"
-;;   "A major mode for tsx.")
-
-(use-package typescript-mode
-  :mode (("\\.ts\\'" . typescript-mode)
-         ("\\.tsx\\'" . typescript-mode)))
-
-;; (defun typescript-settings-fn ()
-;;   (setq typescript-indent-level 2)
-;;   (setq indent-tabs-mode nil)
-;;   (setq tab-width 2))
-;; (add-hook 'typescript-mode-hook 'typescript-settings-fn)
+;; tsx-mode
+(use-package corfu)
+(use-package origami)
+(straight-use-package '(css-in-js-mode :type git :host github :repo "orzechowskid/tree-sitter-css-in-js"))
+(straight-use-package '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el"))
+(add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-mode))
 
 ;; typst
 (use-package typst-mode)
