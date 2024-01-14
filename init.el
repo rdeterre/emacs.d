@@ -641,6 +641,15 @@ The app is chosen from your OS's preference."
 (straight-use-package '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el"))
 (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-mode))
 
+; Fix for a crazy issue where typescript-ts-mode, automatically loaded
+; by tsx-mode, adds itself to auto-mode-alist 🤯. This prevents
+; tsx-mode from being loaded if we do nothing, so we need to remove
+; it.
+;
+; See https://lists.gnu.org/archive/html/emacs-devel/2023-01/msg00263.html
+(with-eval-after-load 'typescript-ts-mode
+  (setq auto-mode-alist (delete '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist)))
+
 ;; typst
 (use-package typst-mode)
 
