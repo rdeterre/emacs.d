@@ -59,6 +59,7 @@
 
 ;; compile
 (global-set-key (kbd "C-c k") 'compile)
+(setq compilation-scroll-output 'first-error)
 
 ;; coverlay
 (use-package coverlay)
