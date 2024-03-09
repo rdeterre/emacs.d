@@ -428,7 +428,7 @@ The app is chosen from your OS's preference."
 (setq browse-url-generic-program
       (cond
        ((eq system-type 'darwin) "open")
-       (linux (executable-find "firefox"))
+       ((eq system-type 'linux) (executable-find "firefox"))
        ))
 (defun w3mext-open-link-or-image-or-url ()
   "Opens the current link or image or current page's uri or any url-like text under cursor in firefox."
