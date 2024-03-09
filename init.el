@@ -641,6 +641,7 @@ The app is chosen from your OS's preference."
 (straight-use-package '(css-in-js-mode :type git :host github :repo "orzechowskid/tree-sitter-css-in-js"))
 (straight-use-package '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el"))
 (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-mode))
+(add-to-list 'auto-mode-alist '("\\.[jt]s\\'" . tsx-mode))
 
 ; Fix for a crazy issue where typescript-ts-mode, automatically loaded
 ; by tsx-mode, adds itself to auto-mode-alist 🤯. This prevents
