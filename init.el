@@ -46,59 +46,59 @@
 
 ;; --- USER SETUP ---
 
-;; ace-window
+;; --- ace-window
 (use-package ace-window)
 (global-set-key (kbd "M-o") 'ace-window)
 
-;; asdf
+;; --- asdf
 (require 'asdf)
 (asdf-enable)
 
-;; beginning-of-line-text
+;; --- beginning-of-line-text
 (global-set-key "\M-m" 'beginning-of-line-text)
 
-;; compile
+;; --- compile
 (global-set-key (kbd "C-c k") 'compile)
 (setq compilation-scroll-output 'first-error)
 
-;; coverlay
+;; --- coverlay
 (use-package coverlay)
 
-;; crux
+;; --- crux
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
-;; dart
+;; --- dart
 (use-package dart-mode)
 
-;; deadgrep
+;; --- deadgrep
 (use-package deadgrep
   :bind (("C-s-s" . #'deadgrep)))
 
-;; dead-keys
+;; --- dead-keys
 (setq ns-right-alternate-modifier 'none)
 
-;; default indentation
+;; --- default indentation
 (setq-default indent-tabs-mode nil)
 
-;; dired
+;; --- dired
 (setq dired-hide-details-mode t)
 
-;; Dockerfiles
+;; --- Dockerfiles
 (use-package dockerfile-mode)
 
-;; doom-modeline
+;; --- doom-modeline
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
 (use-package all-the-icons)
 (require 'all-the-icons)
 
-;; editorconfig
+;; --- editorconfig
 (use-package editorconfig
   :config
   (editorconfig-mode 1))
 
-;; eglot
+;; --- eglot
 (use-package eglot
   :hook ((java-mode . eglot-ensure)
          (TSX . eglot-ensure)
@@ -117,7 +117,8 @@
                '(rust-mode "rust-analyzer"))
   (add-to-list 'eglot-server-programs
                '(TSX . ("typescript-language-server" "--stdio")))
-  :bind (("C-c a" . eglot-code-actions)))
+  :bind (("C-c a" . eglot-code-actions)
+         ("C-c f" . eglot-format-buffer)))
 (global-set-key (kbd "C-c e") 'eglot-rename)
 ;; (setq eglot-workspace-configuration
 ;;       '(
@@ -196,13 +197,21 @@ handle it. If it is not a jar call ORIGINAL-FN."
     (advice-add 'eglot--uri-to-path :around #'jdthandler--wrap-legacy-eglot--uri-to-path)
     (message "[jdthandler] Eglot successfully patched.")))
 
+
+;; Damn .projectile file
+(defun joaot/find-projectile-project ()
+  (let ((probe (locate-dominating-file default-directory ".projectile")))
+    (when probe `(projectile . ,probe))))
+
+(add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
+
 ; invoke
 (jdthandler-patch-eglot)
 
-;; Go
+;; --- Go
 (use-package go-mode)
 
-;; Emacs defaults
+;; --- Emacs defaults
 (setq custom-file "~/.emacs.d/custom.el")
 (setq mac-option-key-is-meta nil
       mac-command-key-is-meta t
@@ -214,30 +223,30 @@ handle it. If it is not a jar call ORIGINAL-FN."
 (tool-bar-mode 0)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
-;; Emacs Everywhere
+;; --- Emacs Everywhere
 (use-package emacs-everywhere)
 
-;; exec-path-from-shell
+;; --- exec-path-from-shell
 (use-package exec-path-from-shell
   :config
   (exec-path-from-shell-initialize))
 
-;; expand-region
+;; --- expand-region
 (use-package expand-region
   :bind (("C-=" . er/expand-region)))
 
 
-;; FFAP
+;; --- FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
-;; flymake
+;; --- flymake
 (global-set-key (kbd "M-n") 'flymake-goto-next-error)
 (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
 
-;; fonts
+;; --- fonts
 (require 'init-fonts)
 
-;; git gutter
+;; --- git gutter
 ;; See https://ianyepan.github.io/posts/emacs-git-gutter/
 (use-package git-gutter
   :hook (prog-mode . git-gutter-mode)
@@ -250,22 +259,22 @@ handle it. If it is not a jar call ORIGINAL-FN."
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
-;; graphviz
+;; --- graphviz
 (use-package graphviz-dot-mode)
 
-;; groovy
+;; --- groovy
 (use-package groovy-mode)
 
-;; git auto-commit
+;; --- git auto-commit
 (use-package git-auto-commit-mode)
 
-;; golden-ratio-scroll-screen
+;; --- golden-ratio-scroll-screen
 (use-package golden-ratio-scroll-screen)
 (require 'golden-ratio-scroll-screen)
 (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
 (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up)
 
-;; ivy/swiper/counsel
+;; --- ivy/swiper/counsel
 (use-package ivy
   :init
   (setq ivy-use-virtual-buffers t)
@@ -319,18 +328,18 @@ INITIAL-INPUT can be given as the initial minibuffer input."
 (use-package counsel-projectile
   :config (counsel-projectile-mode t))
 
-;; java
+;; --- java
 (add-hook 'java-mode-hook
           (lambda ()
             (set-fill-column 120)
             (display-fill-column-indicator-mode t)))
 
-;; javascript
+;; --- javascript
 (add-hook 'typescript-mode
           (lambda ()
             (setq comment-line-break-function 'c-indent-new-comment-line)))
 
-;; jq-mode
+;; --- jq-mode
 (use-package jq-mode
   :config
   (add-to-list 'load-path "/path/to/jq-mode-dir")
@@ -387,10 +396,10 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "M-d") 'my-delete-word)
 (global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
 
-;; markdown-mode
+;; --- markdown-mode
 (use-package markdown-mode)
 
-;; multiple-cursors
+;; --- multiple-cursors
 (use-package multiple-cursors
   :bind
    (("C-S-c C-S-c" . 'mc/edit-lines)
@@ -398,7 +407,7 @@ This command does not push text to `kill-ring'."
    ("C-<" . 'mc/mark-previous-like-this)
    ("C-c C-<" . 'mc/mark-all-like-this)))
 
-;; open externally
+;; --- open externally
 (defun xah-open-in-external-app (&optional file)
   "Open the current file or dired marked files in external app.
 
@@ -440,7 +449,7 @@ The app is chosen from your OS's preference."
     ))
 (global-set-key (kbd "C-c b") 'browse-url-at-point)
 
-;; org-mode
+;; --- org-mode
 (global-set-key (kbd "C-c l") #'org-store-link)
 (global-set-key (kbd "C-c g") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
@@ -513,7 +522,7 @@ The app is chosen from your OS's preference."
 
 (global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
 
-;; org-roam
+;; --- org-roam
 (use-package org-roam
   :ensure t
   :init
@@ -531,7 +540,7 @@ The app is chosen from your OS's preference."
   :config
   (org-roam-setup))
 
-;; recentf
+;; --- recentf
 (recentf-mode 1)
 (setq recentf-max-menu-items 25
       recentf-max-saved-items 25)
@@ -566,10 +575,10 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
-;; prettier-js
+;; --- prettier-js
 (use-package prettier-js)
 
-;; project.el - projectile
+;; --- project.el - projectile
 (use-package projectile
   :demand t
   :init
@@ -599,14 +608,14 @@ The app is chosen from your OS's preference."
 
 (add-hook 'project-find-functions #'project-override)
 
-;; rust
+;; --- rust
 (use-package rust-mode)
 
-;; scala
+;; --- scala
 (use-package scala-mode
   :interpreter ("scala" . scala-mode))
 
-;; Enable sbt mode for executing sbt commands
+;; --- Enable sbt mode for executing sbt commands
 (use-package sbt-mode
   :commands sbt-start sbt-command
   :config
@@ -619,7 +628,7 @@ The app is chosen from your OS's preference."
    ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
    (setq sbt:program-options '("-Dsbt.supershell=false")))
 
-;; shell-pop
+;; --- shell-pop
 (use-package shell-pop
   :init
   (setq shell-pop-term-shell "eshell")
@@ -629,13 +638,13 @@ The app is chosen from your OS's preference."
   (("C-t" . shell-pop)))
 (add-hook 'dired-mode-hook (lambda () (local-set-key (kbd "C-t") #'shell-pop)))
 
-;; smartparens
+;; --- smartparens
 (use-package smartparens)
 
-;; smithy
+;; --- smithy
 (use-package smithy-mode)
 
-;; tsx-mode
+;; --- tsx-mode
 (use-package corfu)
 (use-package origami)
 (straight-use-package '(css-in-js-mode :type git :host github :repo "orzechowskid/tree-sitter-css-in-js"))
@@ -652,19 +661,22 @@ The app is chosen from your OS's preference."
 (with-eval-after-load 'typescript-ts-mode
   (setq auto-mode-alist (delete '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist)))
 
-;; typst
+;; --- typst
 (use-package typst-mode)
 
-;; which-key
+;; --- vterm
+(use-package vterm)
+
+;; --- which-key
 (use-package which-key)
 (require 'which-key)
 (which-key-mode)
 
-;; whitespace-mode
+;; --- whitespace-mode
 (global-set-key (kbd "C-c w") #'whitespace-mode)
 
-;; winner-mode
+;; --- winner-mode
 (winner-mode)
 
-;; yaml-mode
+;; --- yaml-mode
 (use-package yaml-mode)
