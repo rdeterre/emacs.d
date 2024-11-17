@@ -45,10 +45,63 @@
 
 
 ;; --- USER SETUP ---
+(message "Loading user setup - %s" (format-time-string "%H:%M:%S:%N"))
+
+; See https://assortedarray.com/posts/copy-rich-text-cmd-mac/
+(defun formatted-copy ()
+  "Export region to HTML, and copy it to the clipboard."
+  (interactive)
+  (save-window-excursion
+    (let* ((buf (org-export-to-buffer 'html "*Formatted Copy*" nil nil t t))
+           (html (with-current-buffer buf (buffer-string))))
+      (with-current-buffer buf
+        (shell-command-on-region
+         (point-min)
+         (point-max)
+         ;; "textutil -stdin -format html -convert rtf -stdout | pbcopy"))
+         "hexdump -ve '1/1 \"%.2x\"' | xargs printf \"set the clipboard to {text:\\\" \\\", «class HTML»:«data HTML%s»}\" | osascript -"))
+      (kill-buffer buf))))
+
+(global-set-key (kbd "H-w") 'formatted-copy)
+
+;; --- Override default
+(setq-default tab-width 2)
 
 ;; --- ace-window
-(use-package ace-window)
-(global-set-key (kbd "M-o") 'ace-window)
+(defun goto-window-1 ()
+  (interactive)
+  (aw-switch-to-window (nth 0 (aw-window-list))))
+(defun goto-window-2 ()
+  (interactive)
+  (aw-switch-to-window (nth 1 (aw-window-list))))
+(defun goto-window-3 ()
+  (interactive)
+  (aw-switch-to-window (nth 2 (aw-window-list))))
+(defun goto-window-4 ()
+  (interactive)
+  (aw-switch-to-window (nth 3 (aw-window-list))))
+(defun goto-window-5 ()
+  (interactive)
+  (aw-switch-to-window (nth 4 (aw-window-list))))
+(defun goto-window-6 ()
+  (interactive)
+  (aw-switch-to-window (nth 5 (aw-window-list))))
+
+
+(use-package ace-window
+  :bind (("M-o" . ace-window)
+         ("M-1" . goto-window-1)
+         ("M-2" . goto-window-2)
+         ("M-3" . goto-window-3)
+         ("M-4" . goto-window-4)
+         ("M-5" . goto-window-5)
+         ("M-6" . goto-window-6))
+  :config
+  (ace-window-display-mode t))
+
+;; --- ansi-color
+(require 'ansi-color)
+(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 ;; --- asdf
 (require 'asdf)
@@ -81,6 +134,10 @@
 ;; --- default indentation
 (setq-default indent-tabs-mode nil)
 
+;; --- devdocs
+(use-package devdocs
+  :bind (("C-c d d" . devdocs-lookup)))
+
 ;; --- dired
 (setq dired-hide-details-mode t)
 
@@ -100,103 +157,19 @@
 
 ;; --- eglot
 (use-package eglot
-  :hook ((java-mode . eglot-ensure)
-         (TSX . eglot-ensure)
-         (rust-mode . eglot-ensure))
   :init
   :defer t
   :config
-  (add-to-list 'eglot-server-programs
-               '(java-mode .
-                           ("jdtls"
-                            "--jvm-arg=-javaagent:/Volumes/brazil-pkg-cache/packages/Lombok/Lombok-1.18.x.27054.0/AL2_x86_64/DEV.STD.PTHREAD/build/lib/lombok-1.18.26.jar"
-                            "-java.format.settings.url:https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml"
-                            "-java.format.settings.profile:GoogleStyle"
-                              :initializationOptions (:extendedClientCapabilities (:classFileContentsSupport t )))))
+  ;; (advice-add 'jsonrpc--log-event :override #'ignore)
+  ;; (setq eglot-events-buffer-size 0)
   (add-to-list 'eglot-server-programs
                '(rust-mode "rust-analyzer"))
   (add-to-list 'eglot-server-programs
                '(TSX . ("typescript-language-server" "--stdio")))
   :bind (("C-c a" . eglot-code-actions)
-         ("C-c f" . eglot-format-buffer)))
+         ("C-c f" . eglot-format-buffer)
+         ("C-M-." . eglot-find-typeDefinition)))
 (global-set-key (kbd "C-c e") 'eglot-rename)
-;; (setq eglot-workspace-configuration
-;;       '(
-;;          ("java.format.settings.url" . "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml")
-;;          ("java.format.settings.profile" . "GoogleStyle")))
-
-;; (setq eglot-workspace-configuration
-;;             `(("java.format.settings.url" . "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml")))
-
-; NOTE: eglot passes tab-width along with formatting requests
-
-;;; eclipse-jdt breaks the spec which in turn breaks code actions
-;;; This behaviour can't be disabled and needs to be worked around
-(cl-defmethod eglot-execute-command
-  (_server (_cmd (eql java.apply.workspaceEdit)) arguments)
-  "Eclipse JDT breaks spec and replies with edits as arguments."
-  (mapc #'eglot--apply-workspace-edit arguments))
-
-;; The jdt server sometimes returns jdt:// scheme for jumping to definition
-;; instead of returning a file. This is not part of LSP and eglot does not
-;; handle it. The following code enables eglot to handle jdt files.
-;; See https://github.com/yveszoundi/eglot-java/issues/6 for more info.
-(defun jdt-file-name-handler (operation &rest args)
-  "Support Eclipse jdtls `jdt://' uri scheme."
-  (let* ((uri (car args))
-         (cache-dir "/tmp/.eglot")
-         (source-file
-          (expand-file-name
-           (file-name-concat
-            cache-dir
-            (save-match-data
-              (when (string-match "jdt://contents/\\(.*?\\)/\\(.*\\)\.class\\?" uri)
-                (message "URI:%s" uri)
-                (format "%s.java" (replace-regexp-in-string "/" "." (match-string 2 uri) t t))))))))
-    (unless (file-readable-p source-file)
-      (let ((content (jsonrpc-request (eglot-current-server) :java/classFileContents (list :uri uri)))
-            (metadata-file (format "%s.%s.metadata"
-                                   (file-name-directory source-file)
-                                   (file-name-base source-file))))
-        (message "content:%s" content)
-        (unless (file-directory-p cache-dir) (make-directory cache-dir t))
-        (with-temp-file source-file (insert content))
-        (with-temp-file metadata-file (insert uri))))
-    source-file))
-
-(add-to-list 'file-name-handler-alist '("\\`jdt://" . jdt-file-name-handler))
-
-(defun jdthandler--wrap-legacy-eglot--path-to-uri (original-fn &rest args)
-  "Hack until eglot is updated.
-ARGS is a list with one element, a file path or potentially a URI.
-If path is a jar URI, don't parse. If it is not a jar call ORIGINAL-FN."
-  (let ((path (file-truename (car args))))
-    (if (equal "jdt" (url-type (url-generic-parse-url path)))
-        path
-      (apply original-fn args))))
-
-(defun jdthandler--wrap-legacy-eglot--uri-to-path (original-fn &rest args)
-  "Hack until eglot is updated.
-ARGS is a list with one element, a URI.
-If URI is a jar URI, don't parse and let the `jdthandler--file-name-handler'
-handle it. If it is not a jar call ORIGINAL-FN."
-  (let ((uri (car args)))
-    (if (and (stringp uri)
-             (string= "jdt" (url-type (url-generic-parse-url uri))))
-        uri
-     (apply original-fn args))))
-      
-
-(defun jdthandler-patch-eglot ()
-  "Patch old versions of Eglot to work with Jdthandler."
-  (interactive) ;; TODO, remove when eglot is updated in melpa
-  (unless (or (and (advice-member-p #'jdthandler--wrap-legacy-eglot--path-to-uri 'eglot--path-to-uri)
-                   (advice-member-p #'jdthandler--wrap-legacy-eglot--uri-to-path 'eglot--uri-to-path))
-              (<= 29 emacs-major-version))
-    (advice-add 'eglot--path-to-uri :around #'jdthandler--wrap-legacy-eglot--path-to-uri)
-    (advice-add 'eglot--uri-to-path :around #'jdthandler--wrap-legacy-eglot--uri-to-path)
-    (message "[jdthandler] Eglot successfully patched.")))
-
 
 ;; Damn .projectile file
 (defun joaot/find-projectile-project ()
@@ -205,8 +178,12 @@ handle it. If it is not a jar call ORIGINAL-FN."
 
 (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
 
-; invoke
-(jdthandler-patch-eglot)
+(straight-use-package
+ '(eglot-x :host github :repo "nemethf/eglot-x"))
+(use-package eglot-x)
+(with-eval-after-load 'eglot
+      (require 'eglot-x)
+      (eglot-x-setup))
 
 ;; --- Go
 (use-package go-mode)
@@ -549,7 +526,15 @@ The app is chosen from your OS's preference."
 (use-package restart-emacs)
 (global-set-key (kbd "C-c r") 'restart-emacs)
 
-(use-package magit)
+(use-package magit
+  :bind (("C-x g" . magit-status))
+  :config
+  (define-key magit-mode-map (kbd "M-1") nil)
+  (define-key magit-mode-map (kbd "M-2") nil)
+  (define-key magit-mode-map (kbd "M-3") nil)
+  (define-key magit-mode-map (kbd "M-4") nil)
+  (define-key magit-mode-map (kbd "M-5") nil)
+  (define-key magit-mode-map (kbd "M-6") nil))
 ;(setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
 
 (setq magit-display-buffer-function
@@ -651,6 +636,9 @@ The app is chosen from your OS's preference."
 (straight-use-package '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el"))
 (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-mode))
 (add-to-list 'auto-mode-alist '("\\.[jt]s\\'" . tsx-mode))
+(with-eval-after-load 'tsx-mode
+  (message "Hello")
+  (setq comment-line-break-function #'c-indent-new-comment-line))
 
 ; Fix for a crazy issue where typescript-ts-mode, automatically loaded
 ; by tsx-mode, adds itself to auto-mode-alist 🤯. This prevents
@@ -666,6 +654,10 @@ The app is chosen from your OS's preference."
 
 ;; --- vterm
 (use-package vterm)
+
+(use-package vterm-toggle
+  :bind (("C-c ;" . vterm-toggle)
+         ("C-c '" . vterm-toggle-cd)))
 
 ;; --- which-key
 (use-package which-key)

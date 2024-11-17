@@ -14,6 +14,7 @@
         end-of-buffer
         forward-sexp
         indent-for-tab-command
+        keyboard-escape-quit
         kill-region
         markdown-outdent-or-delete
         my-backward-delete-word
