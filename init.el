@@ -188,6 +188,13 @@
 ;; --- Go
 (use-package go-mode)
 
+;; --- gptel
+(use-package gptel
+  :config
+  (setq gptel-default-mode 'org-mode)
+  :bind (("C-c RET" . gptel-send)
+         ("C-c g" . gptel)))
+
 ;; --- Emacs defaults
 (setq custom-file "~/.emacs.d/custom.el")
 (setq mac-option-key-is-meta nil
@@ -428,7 +435,7 @@ The app is chosen from your OS's preference."
 
 ;; --- org-mode
 (global-set-key (kbd "C-c l") #'org-store-link)
-(global-set-key (kbd "C-c g") #'org-agenda)
+;(global-set-key (kbd "C-c g") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
 
 (use-package ein)
