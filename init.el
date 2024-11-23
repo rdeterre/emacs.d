@@ -1,26 +1,13 @@
 ;; --- PRELUDE ---
-
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
-
-(straight-use-package 'org)
-
-; Install MELPA
+(message "Loading init.el - %s" (format-time-string "%H:%M:%S:%N"))
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+(unless (package-installed-p 'use-package)
+  (package install 'use-package))
+(setq use-package-always-ensure t)
 
 (if (string-match-p "aarch64" system-configuration)
     (setq arch "aarch64")
@@ -40,9 +27,6 @@
         "tree-sitter-grammars/" system "/" arch)))
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
-;(add-to-list 'load-path "~/Documents/axe")
-;(require 'axe)
-
 
 ;; --- USER SETUP ---
 (message "Loading user setup - %s" (format-time-string "%H:%M:%S:%N"))
@@ -64,30 +48,7 @@
 
 (global-set-key (kbd "H-w") 'formatted-copy)
 
-;; --- Override default
-(setq-default tab-width 2)
-
 ;; --- ace-window
-(defun goto-window-1 ()
-  (interactive)
-  (aw-switch-to-window (nth 0 (aw-window-list))))
-(defun goto-window-2 ()
-  (interactive)
-  (aw-switch-to-window (nth 1 (aw-window-list))))
-(defun goto-window-3 ()
-  (interactive)
-  (aw-switch-to-window (nth 2 (aw-window-list))))
-(defun goto-window-4 ()
-  (interactive)
-  (aw-switch-to-window (nth 3 (aw-window-list))))
-(defun goto-window-5 ()
-  (interactive)
-  (aw-switch-to-window (nth 4 (aw-window-list))))
-(defun goto-window-6 ()
-  (interactive)
-  (aw-switch-to-window (nth 5 (aw-window-list))))
-
-
 (use-package ace-window
   :bind (("M-o" . ace-window)
          ("M-1" . goto-window-1)
@@ -97,15 +58,34 @@
          ("M-5" . goto-window-5)
          ("M-6" . goto-window-6))
   :config
-  (ace-window-display-mode t))
+  (defun goto-window-1 ()
+    (interactive)
+    (aw-switch-to-window (nth 0 (aw-window-list))))
+  (defun goto-window-2 ()
+    (interactive)
+    (aw-switch-to-window (nth 1 (aw-window-list))))
+  (defun goto-window-3 ()
+    (interactive)
+    (aw-switch-to-window (nth 2 (aw-window-list))))
+  (defun goto-window-4 ()
+    (interactive)
+    (aw-switch-to-window (nth 3 (aw-window-list))))
+  (defun goto-window-5 ()
+    (interactive)
+    (aw-switch-to-window (nth 4 (aw-window-list))))
+  (defun goto-window-6 ()
+    (interactive)
+    (aw-switch-to-window (nth 5 (aw-window-list))))
+  (ace-window-display-mode t)
+  (setq aw-display-always nil))
+
+;; --- all-the-icons
+(use-package all-the-icons)
+(require 'all-the-icons)
 
 ;; --- ansi-color
 (require 'ansi-color)
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
-
-;; --- asdf
-(require 'asdf)
-(asdf-enable)
 
 ;; --- beginning-of-line-text
 (global-set-key "\M-m" 'beginning-of-line-text)
@@ -114,6 +94,28 @@
 (global-set-key (kbd "C-c k") 'compile)
 (setq compilation-scroll-output 'first-error)
 
+;; --- copy-current-line-position-to-clipboard
+(defun copy-current-line-position-to-clipboard ()
+  "Copy current line in file to clipboard as 'file:<path>::<line-number>'"
+  (interactive)
+  (let ((path-with-line-number
+         (concat
+          "file:" (buffer-file-name) "::" (number-to-string (line-number-at-pos)))))
+    (kill-new path-with-line-number)
+    (message (concat path-with-line-number " copied to clipboard"))))
+(defun copy-current-line-position-to-clipboard-org ()
+  "Copy current line in file to clipboard as 'file:<path>::<line-number>'"
+  (interactive)
+  (let ((path-with-line-number
+         (concat
+          "[[file:" (buffer-file-name) "::" (number-to-string (line-number-at-pos))
+          "][" (file-name-nondirectory (buffer-file-name)) " : " (which-function) " : "
+          (string-trim (thing-at-point 'line t)) "]]")))
+    (kill-new path-with-line-number)
+    (message (concat path-with-line-number " copied to clipboard"))))
+(global-set-key (kbd "C-c j j") 'copy-current-line-position-to-clipboard)
+(global-set-key (kbd "C-c j k") 'copy-current-line-position-to-clipboard-org)
+
 ;; --- coverlay
 (use-package coverlay)
 
@@ -121,6 +123,8 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
+(use-package all-the-icons)
+(require 'all-the-icons)
 ;; --- dart
 (use-package dart-mode)
 
@@ -136,7 +140,14 @@
 
 ;; --- devdocs
 (use-package devdocs
-  :bind (("C-c d d" . devdocs-lookup)))
+  :bind (("C-c d d" . devdocs-lookup))
+  :init
+  (setq devdocs-window-select t)
+  :config
+  (add-hook 'cmake-mode-hook
+            (lambda () (setq-local devdocs-current-docs '("cmake~3.26"))))
+  (add-hook 'python-mode-hook
+            (lambda () (setq-loadl devdocs-current-docs '("python~3.10")))))
 
 ;; --- dired
 (setq dired-hide-details-mode t)
@@ -147,8 +158,6 @@
 ;; --- doom-modeline
 (use-package doom-modeline
   :init (doom-modeline-mode 1))
-(use-package all-the-icons)
-(require 'all-the-icons)
 
 ;; --- editorconfig
 (use-package editorconfig
@@ -178,13 +187,6 @@
 
 (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
 
-(straight-use-package
- '(eglot-x :host github :repo "nemethf/eglot-x"))
-(use-package eglot-x)
-(with-eval-after-load 'eglot
-      (require 'eglot-x)
-      (eglot-x-setup))
-
 ;; --- Go
 (use-package go-mode)
 
@@ -206,6 +208,8 @@
 (setq visible-bell t)
 (tool-bar-mode 0)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(setq-default fill-column 120)
+(setq-default tab-width 2)
 
 ;; --- Emacs Everywhere
 (use-package emacs-everywhere)
@@ -228,7 +232,7 @@
 (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
 
 ;; --- fonts
-(require 'init-fonts)
+;(require 'init-fonts)
 
 ;; --- git gutter
 ;; See https://ianyepan.github.io/posts/emacs-git-gutter/
@@ -635,26 +639,6 @@ The app is chosen from your OS's preference."
 
 ;; --- smithy
 (use-package smithy-mode)
-
-;; --- tsx-mode
-(use-package corfu)
-(use-package origami)
-(straight-use-package '(css-in-js-mode :type git :host github :repo "orzechowskid/tree-sitter-css-in-js"))
-(straight-use-package '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el"))
-(add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-mode))
-(add-to-list 'auto-mode-alist '("\\.[jt]s\\'" . tsx-mode))
-(with-eval-after-load 'tsx-mode
-  (message "Hello")
-  (setq comment-line-break-function #'c-indent-new-comment-line))
-
-; Fix for a crazy issue where typescript-ts-mode, automatically loaded
-; by tsx-mode, adds itself to auto-mode-alist 🤯. This prevents
-; tsx-mode from being loaded if we do nothing, so we need to remove
-; it.
-;
-; See https://lists.gnu.org/archive/html/emacs-devel/2023-01/msg00263.html
-(with-eval-after-load 'typescript-ts-mode
-  (setq auto-mode-alist (delete '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist)))
 
 ;; --- typst
 (use-package typst-mode)
