@@ -8,6 +8,9 @@
         c-electric-delete-forward
         c-electric-semi&comma
         c-indent-line-or-region
+        caser-camelcase-dwim
+        caser-snakecase-dwim
+        caser-upper-camelcase-dwim
         counsel-M-x
         default-indent-new-line
         electric-newline-and-maybe-indent

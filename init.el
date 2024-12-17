@@ -19,6 +19,8 @@
   (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
+(straight-use-package 'org) ; Replace standard org-mode with straight's one
+
 (require 'use-package)
 (setq use-package-always-ensure t)
 
@@ -43,6 +45,11 @@
 
 ;; --- USER SETUP ---
 (message "Loading user setup - %s" (format-time-string "%H:%M:%S:%N"))
+
+;; See https://github.com/radian-software/straight.el/issues/1146
+(straight-use-package 'project)
+
+(setq gc-cons-threshold 80000000)
 
 ; See https://assortedarray.com/posts/copy-rich-text-cmd-mac/
 (defun formatted-copy ()
@@ -102,6 +109,9 @@
 
 ;; --- beginning-of-line-text
 (global-set-key "\M-m" 'beginning-of-line-text)
+
+;; --- caser
+(use-package caser)
 
 ;; --- compile
 (global-set-key (kbd "C-c k") 'compile)
@@ -169,8 +179,8 @@
 (use-package dockerfile-mode)
 
 ;; --- doom-modeline
-(use-package doom-modeline
-  :init (doom-modeline-mode 1))
+;(use-package doom-modeline
+;  :init (doom-modeline-mode 1))
 
 ;; --- editorconfig
 (use-package editorconfig
@@ -236,6 +246,8 @@
 (use-package expand-region
   :bind (("C-=" . er/expand-region)))
 
+;; --- f
+(use-package f)
 
 ;; --- FFAP
 (global-set-key (kbd "C-c .") 'ffap)
@@ -250,9 +262,7 @@
 ;; --- git gutter
 ;; See https://ianyepan.github.io/posts/emacs-git-gutter/
 (use-package git-gutter
-  :hook (prog-mode . git-gutter-mode)
-  :config
-  (setq git-gutter:update-interval 0.02))
+  :hook (prog-mode . git-gutter-mode))
 
 (use-package git-gutter-fringe
   :config
@@ -274,6 +284,9 @@
 (require 'golden-ratio-scroll-screen)
 (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
 (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up)
+
+;; --- highlight
+(setq highlight-nonselected-windows t)
 
 ;; --- ivy/swiper/counsel
 (use-package ivy
@@ -419,6 +432,25 @@ This command does not push text to `kill-ring'."
    ("C-<" . 'mc/mark-previous-like-this)
    ("C-c C-<" . 'mc/mark-all-like-this)))
 
+(defun adviced:counsel-M-x-action (orig-fun &rest r)
+  "Additional support for multiple cursors."
+  (apply orig-fun r)
+  (let ((cmd (intern (car r))))
+    (when (and (boundp 'multiple-cursors-mode)
+               multiple-cursors-mode
+               cmd
+               (not (memq cmd mc--default-cmds-to-run-once))
+               (not (memq cmd mc/cmds-to-run-once))
+               (or mc/always-run-for-all
+                   (memq cmd mc--default-cmds-to-run-for-all)
+                   (memq cmd mc/cmds-to-run-for-all)
+                   (mc/prompt-for-inclusion-in-whitelist cmd)))
+      (mc/execute-command-for-all-fake-cursors cmd))))
+
+(advice-add #'counsel-M-x-action
+            :around
+            #'adviced:counsel-M-x-action)
+
 ;; --- open externally
 (defun xah-open-in-external-app (&optional file)
   "Open the current file or dired marked files in external app.
@@ -516,7 +548,7 @@ The app is chosen from your OS's preference."
         (error "Not in org link")
       (kill-new url))))
 
-(require 'org-drawio)
+;(require 'org-drawio)
 
 (defun org-quip-link-paste ()
   (interactive)
@@ -664,15 +696,18 @@ The app is chosen from your OS's preference."
 ;; --- smithy
 (use-package smithy-mode)
 
-;; --- typst
-(use-package typst-mode)
-
 ;; --- vterm
 (use-package vterm)
 
 (use-package vterm-toggle
   :bind (("C-c ;" . vterm-toggle)
          ("C-c '" . vterm-toggle-cd)))
+(define-key vterm-mode-map (kbd "M-1") #'goto-window-1)
+(define-key vterm-mode-map (kbd "M-2") #'goto-window-2)
+(define-key vterm-mode-map (kbd "M-3") #'goto-window-3)
+(define-key vterm-mode-map (kbd "M-4") #'goto-window-4)
+(define-key vterm-mode-map (kbd "M-5") #'goto-window-5)
+(define-key vterm-mode-map (kbd "M-6") #'goto-window-6)
 
 ;; --- which-key
 (use-package which-key)
@@ -690,3 +725,6 @@ The app is chosen from your OS's preference."
 
 ;; --- yasnippet
 (use-package yasnippet)
+
+;; --- zenburn
+(use-package zenburn)
