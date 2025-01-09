@@ -203,7 +203,8 @@
   :config
   (setq gptel-default-mode 'org-mode)
   :bind (("C-c RET" . gptel-send)
-         ("C-c g" . gptel)))
+         ("C-c g" . gptel)
+         ("C-c h" . gptel-send)))
 
 ;; --- Emacs defaults
 (setq custom-file "~/.emacs.d/custom.el")
