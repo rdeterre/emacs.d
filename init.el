@@ -1,57 +1,125 @@
-;; --- PRELUDE ---
-(message "Loading init.el - %s" (format-time-string "%H:%M:%S:%N"))
+;; --- elpaca prelude
+;; Bootstraps elpaca and sets up the use-package integration
 
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-(unless (package-installed-p 'use-package)
-  (package install 'use-package))
+(defvar elpaca-installer-version 0.8)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-(require 'use-package)
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
 (setq use-package-always-ensure t)
 
-(if (string-match-p "aarch64" system-configuration)
-    (setq arch "aarch64")
-  (setq arch "x86_64"))
 
-(setq system
-      (pcase system-type
-        (darwin "macOS")
-        (gnu/linux "Linux")
-        (windows-nt "Windows")
-        (_ "Unknown")))
-
-(setq treesit-extra-load-path
-      (list
-       (concat
-        (file-name-directory user-init-file)
-        "tree-sitter-grammars/" system "/" arch)))
-
+;; --- Standard Emacs prelude
+;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
+(setq mac-option-key-is-meta nil
+      mac-command-key-is-meta t
+      mac-command-modifier 'meta
+      mac-option-modifier 'super)
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
+      column-number-mode t
+      custom-file "~/.emacs.d/custom.el"
+      gc-cons-threshold 80000000
+      visible-bell t)
+(setq-default fill-column 120
+              indent-tabs-mode nil
+              tab-width 2)
 
-;; --- USER SETUP ---
-(message "Loading user setup - %s" (format-time-string "%H:%M:%S:%N"))
+;; --- nano
+(elpaca (nano :host github
+  			  :repo "rougier/nano-emacs")
+  (require 'nano-layout)
 
-(setq gc-cons-threshold 80000000)
+  ;; Theming Command line options (this will cancel warning messages)
+  (add-to-list 'command-switch-alist '("-dark"   . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-light"  . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-default"  . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
 
-; See https://assortedarray.com/posts/copy-rich-text-cmd-mac/
-(defun formatted-copy ()
-  "Export region to HTML, and copy it to the clipboard."
-  (interactive)
-  (save-window-excursion
-    (let* ((buf (org-export-to-buffer 'html "*Formatted Copy*" nil nil t t))
-           (html (with-current-buffer buf (buffer-string))))
-      (with-current-buffer buf
-        (shell-command-on-region
-         (point-min)
-         (point-max)
-         ;; "textutil -stdin -format html -convert rtf -stdout | pbcopy"))
-         "hexdump -ve '1/1 \"%.2x\"' | xargs printf \"set the clipboard to {text:\\\" \\\", «class HTML»:«data HTML%s»}\" | osascript -"))
-      (kill-buffer buf))))
+  ;; Theme
+  (require 'nano-faces)
+  (require 'nano-theme)
+  (require 'nano-theme-dark)
+  (require 'nano-theme-light)
 
-(global-set-key (kbd "H-w") 'formatted-copy)
+  (cond
+   ((member "-default" command-line-args) t)
+   ((member "-dark" command-line-args) (nano-theme-set-dark))
+   (t (nano-theme-set-light)))
+  (call-interactively 'nano-refresh-theme)
+
+  ;; Nano default settings (optional)
+  (require 'nano-defaults)
+
+  ;; Nano session saving (optional)
+  (require 'nano-session)
+
+  ;; Nano header & mode lines (optional)
+  (require 'nano-modeline)
+
+  ;; Nano key bindings modification (optional)
+  (require 'nano-bindings)
+
+  ;; Compact layout (need to be loaded after nano-modeline)
+  (when (member "-compact" command-line-args)
+    (require 'nano-compact))
+  
+  ;; Nano counsel configuration (optional)
+  ;; Needs "counsel" package to be installed (M-x: package-install)
+  ;; (require 'nano-counsel)
+
+  ;; Welcome message (optional)
+  (let ((inhibit-message t))
+    (message "Welcome to GNU Emacs / N Λ N O edition!")
+    (message (format "Initialization time: %s" (emacs-init-time))))
+
+  ;; Splash (optional)
+  (unless (member "-no-splash" command-line-args)
+    (require 'nano-splash))
+
+  ;; Help (optional)
+  (unless (member "-no-help" command-line-args)
+    (require 'nano-help)))
+
 
 ;; --- ace-window
 (use-package ace-window
@@ -81,12 +149,28 @@
   (defun goto-window-6 ()
     (interactive)
     (aw-switch-to-window (nth 5 (aw-window-list))))
-  (ace-window-display-mode t)
-  (setq aw-display-always nil))
+  (setq aw-display-always nil)
+  (add-hook 'window-configuration-change-hook 'aw-update)
+  (defun nano-modeline-default-mode ()
+    (let ((buffer-name (format-mode-line "%b"))
+          (mode-name   (nano-mode-name))
+          (branch      (vc-branch))
+          (position    (concat
+                        (format-mode-line "%l:%c")
+                        " - "
+                        (window-parameter (selected-window) 'ace-window-path))))
+      (nano-modeline-compose (nano-modeline-status)
+                             buffer-name
+                             (concat "(" mode-name
+                                     (if branch (concat ", "
+                                            (propertize branch 'face 'italic)))
+                                     ")" )
+                             position))))
 
 ;; --- all-the-icons
-(use-package all-the-icons)
-(require 'all-the-icons)
+(use-package all-the-icons
+  :config
+  (require 'all-the-icons))
 
 ;; --- ansi-color
 (require 'ansi-color)
@@ -96,7 +180,7 @@
 (global-set-key "\M-m" 'beginning-of-line-text)
 
 ;; --- caser
-(use-package caser)
+;; (use-package caser) ; broken with elpaca for some reason
 
 ;; --- compile
 (global-set-key (kbd "C-c k") 'compile)
@@ -131,8 +215,6 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
-(use-package all-the-icons)
-(require 'all-the-icons)
 ;; --- dart
 (use-package dart-mode)
 
@@ -142,9 +224,6 @@
 
 ;; --- dead-keys
 (setq ns-right-alternate-modifier 'none)
-
-;; --- default indentation
-(setq-default indent-tabs-mode nil)
 
 ;; --- devdocs
 (use-package devdocs
@@ -163,19 +242,24 @@
 ;; --- Dockerfiles
 (use-package dockerfile-mode)
 
-;; --- doom-modeline
-;(use-package doom-modeline
-;  :init (doom-modeline-mode 1))
-
 ;; --- editorconfig
 (use-package editorconfig
   :config
   (editorconfig-mode 1))
 
 ;; --- eglot
+(unload-feature 'eldoc t)
+(setq custom-delayed-init-variables '())
+(defvar global-eldoc-mode nil)
+
+(elpaca eldoc
+  (require 'eldoc)
+  (global-eldoc-mode)) ;; This is usually enabled by default by Emacs
+(use-package jsonrpc :ensure (:wait t) :defer t)
 (use-package eglot
   :init
   :defer t
+  :ensure (:wait t)
   :config
   ;; (advice-add 'jsonrpc--log-event :override #'ignore)
   ;; (setq eglot-events-buffer-size 0)
@@ -183,17 +267,18 @@
                '(rust-mode "rust-analyzer"))
   (add-to-list 'eglot-server-programs
                '(TSX . ("typescript-language-server" "--stdio")))
+
+  ;; Damn .projectile file
+  (defun joaot/find-projectile-project ()
+    (let ((probe (locate-dominating-file default-directory ".projectile")))
+      (when probe `(projectile . ,probe))))
+
+  (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
+
   :bind (("C-c a" . eglot-code-actions)
          ("C-c f" . eglot-format-buffer)
-         ("C-M-." . eglot-find-typeDefinition)))
-(global-set-key (kbd "C-c e") 'eglot-rename)
-
-;; Damn .projectile file
-(defun joaot/find-projectile-project ()
-  (let ((probe (locate-dominating-file default-directory ".projectile")))
-    (when probe `(projectile . ,probe))))
-
-(add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
+         ("C-M-." . eglot-find-typeDefinition)
+         ("C-c e" . eglot-rename)))
 
 ;; --- Go
 (use-package go-mode)
@@ -205,20 +290,6 @@
   :bind (("C-c RET" . gptel-send)
          ("C-c g" . gptel)
          ("C-c h" . gptel-send)))
-
-;; --- Emacs defaults
-(setq custom-file "~/.emacs.d/custom.el")
-(setq mac-option-key-is-meta nil
-      mac-command-key-is-meta t
-      mac-command-modifier 'meta
-      mac-option-modifier 'super)
-; See: https://superuser.com/questions/941286/disable-default-option-key-binding
-(setq column-number-mode t)
-(setq visible-bell t)
-(tool-bar-mode 0)
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
-(setq-default fill-column 120)
-(setq-default tab-width 2)
 
 ;; --- Emacs Everywhere
 (use-package emacs-everywhere)
@@ -242,34 +313,15 @@
 (global-set-key (kbd "M-n") 'flymake-goto-next-error)
 (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
 
-;; --- fonts
-;(require 'init-fonts)
-
-;; --- git gutter
-;; See https://ianyepan.github.io/posts/emacs-git-gutter/
-(use-package git-gutter
-  :hook (prog-mode . git-gutter-mode))
-
-(use-package git-gutter-fringe
-  :config
-  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
-
-;; --- graphviz
-(use-package graphviz-dot-mode)
-
-;; --- groovy
-(use-package groovy-mode)
-
 ;; --- git auto-commit
 (use-package git-auto-commit-mode)
 
 ;; --- golden-ratio-scroll-screen
-(use-package golden-ratio-scroll-screen)
-(require 'golden-ratio-scroll-screen)
-(global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
-(global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up)
+(use-package golden-ratio-scroll-screen
+  :config
+  (require 'golden-ratio-scroll-screen)
+  (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
+  (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up))
 
 ;; --- highlight
 (setq highlight-nonselected-windows t)
@@ -289,44 +341,14 @@
   ("C-c m" . counsel-imenu)
   :config
   (counsel-mode)
+  ;; (require 'nano-counsel)
   :demand t)
-
-; https://timmydouglas.com/2020/12/17/eshell-counsel.html
-(defun timmy/counsel-eshell-history-action (cmd)
-  "Insert cmd into the buffer"
-  (interactive)
-  (insert cmd))
-(defun timmy/counsel-eshell-history (&optional initial-input)
-  "Find command from eshell history.
-INITIAL-INPUT can be given as the initial minibuffer input."
-  (interactive)
-    (ivy-read "Find cmd: " (timmy/eshell-history-list)
-              :initial-input initial-input
-              :action #'timmy/counsel-eshell-history-action
-              :caller 'timmy/counsel-eshell-history))
-(defun timmy/eshell-history-list ()
-  "return the eshell history as a list"
-  (and (or (not (ring-p eshell-history-ring))
-	   (ring-empty-p eshell-history-ring))
-       (error "No history"))
-  (let* ((index (1- (ring-length eshell-history-ring)))
-	 (ref (- (ring-length eshell-history-ring) index))
-	 (items (list)))
-    (while (>= index 0)
-      (setq items (cons (format "%s" (eshell-get-history index)) items)
-	    index (1- index)
-	    ref (1+ ref)))
-    items))
-
-;; (use-package esh-mode
-;;   :ensure nil
-;;   :bind (:map eshell-mode-map
-;; 	      ("C-r" . timmy/counsel-eshell-history)))
+(use-package smex
+  :ensure (:wait t)
+  :config
+  (require 'nano-counsel))
 
 (global-set-key (kbd "C-c u") 'counsel-unicode-char)
-
-(use-package counsel-projectile
-  :config (counsel-projectile-mode t))
 
 ;; --- java
 (add-hook 'java-mode-hook
@@ -473,12 +495,11 @@ The app is chosen from your OS's preference."
 ;(global-set-key (kbd "C-c g") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
 
-(use-package ein)
+;; (use-package ein)
 
 (org-babel-do-load-languages
 'org-babel-load-languages
-'((ein . t)
-  (shell . t)
+'((shell . t)
   (eshell . t)
   (python . t)))
 
@@ -497,40 +518,33 @@ The app is chosen from your OS's preference."
 (eval-after-load 'org
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
 
-(use-package ox-gfm)
-(require 'ox-slack)
+;; (use-package ox-gfm)
+;; (require 'ox-slack)
 
-(use-package org-bullets
-    :config
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+;; (use-package org-bullets
+;;     :config
+;;     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-; Code to copy links out of org-mode
-; See https://emacs.stackexchange.com/a/3990
-(defun org-extract-link-url (text)
-  (string-match org-bracket-link-regexp text)
-  (substring text (match-beginning 1) (match-end 1)))
+;; ; Code to copy links out of org-mode
+;; ; See https://emacs.stackexchange.com/a/3990
+;; (defun org-extract-link-url (text)
+;;   (string-match org-bracket-link-regexp text)
+;;   (substring text (match-beginning 1) (match-end 1)))
 
-(defun my-org-retrieve-url-from-point ()
-  (interactive)
-  (let* ((link-info (assoc :link (org-context)))
-         (text (when link-info
-                 ;; org-context seems to return nil if the current element
-                 ;; starts at buffer-start or ends at buffer-end
-                 (buffer-substring-no-properties (or (cadr link-info) (point-min))
-                                                 (or (caddr link-info) (point-max)))))
-	 (url (org-extract-link-url text)))
-    (if (not url)
-        (error "Not in org link")
-      (kill-new url))))
+;; (defun my-org-retrieve-url-from-point ()
+;;   (interactive)
+;;   (let* ((link-info (assoc :link (org-context)))
+;;          (text (when link-info
+;;                  ;; org-context seems to return nil if the current element
+;;                  ;; starts at buffer-start or ends at buffer-end
+;;                  (buffer-substring-no-properties (or (cadr link-info) (point-min))
+;;                                                  (or (caddr link-info) (point-max)))))
+;; 	 (url (org-extract-link-url text)))
+;;     (if (not url)
+;;         (error "Not in org link")
+;;       (kill-new url))))
 
-;(require 'org-drawio)
-
-(defun org-quip-link-paste ()
-  (interactive)
-  (let* ((link (current-kill 0))
-         (path (car (last (split-string link "/")))))
-    (insert (format "[[%s][%s]]" link path))))
-(define-key org-mode-map (kbd "C-c k") #'org-quip-link-paste)
+;; ;(require 'org-drawio)
 
 (defun my-smarter-kill-ring-save ()
   (interactive)
@@ -559,14 +573,28 @@ The app is chosen from your OS's preference."
   :config
   (org-roam-setup))
 
-;; --- recentf
-(recentf-mode 1)
-(setq recentf-max-menu-items 25
-      recentf-max-saved-items 25)
-(global-set-key (kbd "C-x C-r") 'recentf-open-files)
+;; ;; --- recentf
+;; (recentf-mode 1)
+;; (setq recentf-max-menu-items 25
+;;       recentf-max-saved-items 25)
+;; (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
-(use-package restart-emacs)
-(global-set-key (kbd "C-c r") 'restart-emacs)
+;; (use-package restart-emacs)
+;; (global-set-key (kbd "C-c r") 'restart-emacs)
+;(use-package seq)
+
+(defun +elpaca-unload-seq (e)
+  (and (featurep 'seq) (unload-feature 'seq t))
+  (elpaca--continue-build e))
+
+;; You could embed this code directly in the reicpe, I just abstracted it into a function.
+(defun +elpaca-seq-build-steps ()
+  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
+                       elpaca--pre-built-steps elpaca-build-steps))
+          (list '+elpaca-unload-seq 'elpaca--activate-package)))
+(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
+(use-package transient
+  :ensure (:wait t))
 
 (use-package magit
   :bind (("C-x g" . magit-status))
@@ -576,10 +604,8 @@ The app is chosen from your OS's preference."
   (define-key magit-mode-map (kbd "M-3") nil)
   (define-key magit-mode-map (kbd "M-4") nil)
   (define-key magit-mode-map (kbd "M-5") nil)
-  (define-key magit-mode-map (kbd "M-6") nil))
-;(setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
-
-(setq magit-display-buffer-function
+  (define-key magit-mode-map (kbd "M-6") nil)
+  (setq magit-display-buffer-function
       (lambda (buffer)
         (display-buffer
          buffer
@@ -594,7 +620,8 @@ The app is chosen from your OS's preference."
                         magit-stash-mode))
                 nil)
                (t
-                '(display-buffer-same-window))))))
+                '(display-buffer-same-window)))))))
+
 
 (defun open-init-file ()
   "Open the init file."
@@ -614,92 +641,51 @@ The app is chosen from your OS's preference."
   (projectile-mode +1)
   (projectile-load-known-projects)
   (projectile-commander-bindings)
-  :bind-keymap 
-  (("C-c p" . projectile-command-map)
-   ("s-p" . projectile-command-map)))
-
-
-(defun projectile-shell-pop ()
-  "Pop-up a shell buffer at the project root. Stolen from spacemacs "
-  (interactive)
-  (let ((default-directory (projectile-acquire-root)))
-    (call-interactively 'shell-pop)))
-
-(global-set-key (kbd "C-'") 'projectile-shell-pop)
-
-(defun project-override (dir)
+  (defun project-override (dir)
   (let ((override (locate-dominating-file dir ".project.el")))
     (if override
       (cons 'vc override)
       nil)))
+  (add-hook 'project-find-functions #'project-override)
+  :bind-keymap 
+  (("C-c p" . projectile-command-map)
+   ("s-p" . projectile-command-map)))
 
-(add-hook 'project-find-functions #'project-override)
+(use-package counsel-projectile
+  :config (counsel-projectile-mode t))
 
 ;; --- rust
 (use-package rust-mode)
 
-;; --- scala
-(use-package scala-mode
-  :interpreter ("scala" . scala-mode))
+;; ;; --- smartparens
+;; (use-package smartparens)
 
-;; --- Enable sbt mode for executing sbt commands
-(use-package sbt-mode
-  :commands sbt-start sbt-command
-  :config
-  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
-  ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map)
-   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-   (setq sbt:program-options '("-Dsbt.supershell=false")))
-
-;; --- shell-pop
-(use-package shell-pop
-  :init
-  (setq shell-pop-term-shell "eshell")
-  (setq shell-pop-shell-type '("eshell" "eshell" (lambda () (eshell))))
-  (setq shell-pop-window-position "full")
-  :bind
-  (("C-t" . shell-pop)))
-(add-hook 'dired-mode-hook (lambda () (local-set-key (kbd "C-t") #'shell-pop)))
-
-;; --- smartparens
-(use-package smartparens)
-
-;; --- smithy
-(use-package smithy-mode)
+;; ;; --- smithy
+;; (use-package smithy-mode)
 
 ;; --- vterm
 (use-package vterm)
 
 (use-package vterm-toggle
-  :bind (("C-c ;" . vterm-toggle)
-         ("C-c '" . vterm-toggle-cd)))
-(define-key vterm-mode-map (kbd "M-1") #'goto-window-1)
-(define-key vterm-mode-map (kbd "M-2") #'goto-window-2)
-(define-key vterm-mode-map (kbd "M-3") #'goto-window-3)
-(define-key vterm-mode-map (kbd "M-4") #'goto-window-4)
-(define-key vterm-mode-map (kbd "M-5") #'goto-window-5)
-(define-key vterm-mode-map (kbd "M-6") #'goto-window-6)
+  :bind (("C-;" . vterm-toggle)
+         ("C-'" . vterm-toggle-cd))
+  :config
+  (setq vterm-toggle-project-root t)
+  (setq vterm-toggle-scope 'project))
 
 ;; --- which-key
-(use-package which-key)
-(require 'which-key)
-(which-key-mode)
+(use-package which-key
+  :config
+  (require 'which-key)
+  (which-key-mode))
 
 ;; --- whitespace-mode
 (global-set-key (kbd "C-c w") #'whitespace-mode)
 
 ;; --- winner-mode
 (winner-mode)
+(global-set-key (kbd "C-c ;") #'winner-undo)
+(global-set-key (kbd "C-c '") #'winner-redo)
 
 ;; --- yaml-mode
 (use-package yaml-mode)
-
-;; --- yasnippet
-(use-package yasnippet)
-
-;; --- zenburn
-(use-package zenburn-theme)
