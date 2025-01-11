@@ -1,13 +1,16 @@
+.org-id-locations
+bookmarks
 custom.el
 .cache/
-elpa/
-straight/
-transient/
+devdocs/
+elpaca/
 backups/
 games/
+org-roam.db
+projectile.cache
+smex-items
 tramp
 
-eshell/
 projectile-bookmarks.eld
 recentf
 auto-save-list/
