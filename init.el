@@ -120,7 +120,6 @@
   (unless (member "-no-help" command-line-args)
     (require 'nano-help)))
 
-
 ;; --- ace-window
 (use-package ace-window
   :bind (("M-o" . ace-window)
@@ -517,13 +516,6 @@ The app is chosen from your OS's preference."
 ; Live refresh inline images
 (eval-after-load 'org
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
-
-;; (use-package ox-gfm)
-;; (require 'ox-slack)
-
-;; (use-package org-bullets
-;;     :config
-;;     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; ; Code to copy links out of org-mode
 ;; ; See https://emacs.stackexchange.com/a/3990
