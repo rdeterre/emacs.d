@@ -35,6 +35,7 @@
         org-self-insert-command
         org-yank
         swiper
+        upper-camel-case
         wdired--self-insert
         yaml-electric-backspace
         ))

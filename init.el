@@ -57,68 +57,13 @@
       column-number-mode t
       custom-file "~/.emacs.d/custom.el"
       gc-cons-threshold 80000000
+      highlight-nonselected-windows t
+      initial-major-mode 'org-mode
       visible-bell t)
 (setq-default fill-column 120
               indent-tabs-mode nil
               tab-width 2)
-
-;; --- nano
-(elpaca (nano :host github
-  			  :repo "rougier/nano-emacs")
-  (require 'nano-layout)
-
-  ;; Theming Command line options (this will cancel warning messages)
-  (add-to-list 'command-switch-alist '("-dark"   . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-light"  . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-default"  . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
-
-  ;; Theme
-  (require 'nano-faces)
-  (require 'nano-theme)
-  (require 'nano-theme-dark)
-  (require 'nano-theme-light)
-
-  (cond
-   ((member "-default" command-line-args) t)
-   ((member "-dark" command-line-args) (nano-theme-set-dark))
-   (t (nano-theme-set-light)))
-  (call-interactively 'nano-refresh-theme)
-
-  ;; Nano default settings (optional)
-  (require 'nano-defaults)
-
-  ;; Nano session saving (optional)
-  (require 'nano-session)
-
-  ;; Nano header & mode lines (optional)
-  (require 'nano-modeline)
-
-  ;; Nano key bindings modification (optional)
-  (require 'nano-bindings)
-
-  ;; Compact layout (need to be loaded after nano-modeline)
-  (when (member "-compact" command-line-args)
-    (require 'nano-compact))
-  
-  ;; Nano counsel configuration (optional)
-  ;; Needs "counsel" package to be installed (M-x: package-install)
-  ;; (require 'nano-counsel)
-
-  ;; Welcome message (optional)
-  (let ((inhibit-message t))
-    (message "Welcome to GNU Emacs / N Λ N O edition!")
-    (message (format "Initialization time: %s" (emacs-init-time))))
-
-  ;; Splash (optional)
-  (unless (member "-no-splash" command-line-args)
-    (require 'nano-splash))
-
-  ;; Help (optional)
-  (unless (member "-no-help" command-line-args)
-    (require 'nano-help)))
+(tool-bar-mode -1)
 
 ;; --- ace-window
 (use-package ace-window
@@ -220,6 +165,9 @@
 ;; --- deadgrep
 (use-package deadgrep
   :bind (("C-s-s" . #'deadgrep)))
+
+;; --- default indentation
+(setq-default indent-tabs-mode nil)
 
 ;; --- dead-keys
 (setq ns-right-alternate-modifier 'none)
@@ -343,9 +291,7 @@
   ;; (require 'nano-counsel)
   :demand t)
 (use-package smex
-  :ensure (:wait t)
-  :config
-  (require 'nano-counsel))
+  :ensure (:wait t))
 
 (global-set-key (kbd "C-c u") 'counsel-unicode-char)
 
@@ -494,8 +440,6 @@ The app is chosen from your OS's preference."
 ;(global-set-key (kbd "C-c g") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
 
-;; (use-package ein)
-
 (org-babel-do-load-languages
 'org-babel-load-languages
 '((shell . t)
@@ -516,6 +460,12 @@ The app is chosen from your OS's preference."
 ; Live refresh inline images
 (eval-after-load 'org
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
+
+(use-package org-modern
+  :init
+  (setq org-modern-block-name nil)
+  :config
+  (add-hook 'org-mode-hook #'org-modern-mode))
 
 ;; ; Code to copy links out of org-mode
 ;; ; See https://emacs.stackexchange.com/a/3990
@@ -546,6 +496,21 @@ The app is chosen from your OS's preference."
       (call-interactively #'my-org-retrieve-url-from-point))))
 
 (global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
+
+(defun org-insert-backtick ()
+  "Insert a backtick using `org-self-insert-command'."
+  (interactive)
+  (setq last-command-event ?`)
+  (call-interactively #'org-self-insert-command))
+
+(defun org-insert-tilde ()
+  "Insert a tilde using `org-self-insert-command'."
+  (interactive)
+  (setq last-command-event ?~)
+  (call-interactively #'org-self-insert-command))
+
+(define-key org-mode-map (kbd "`") #'org-insert-tilde)
+(define-key org-mode-map (kbd "~") #'org-insert-backtick)
 
 ;; --- org-roam
 (use-package org-roam
@@ -646,6 +611,11 @@ The app is chosen from your OS's preference."
 (use-package counsel-projectile
   :config (counsel-projectile-mode t))
 
+;; --- realgud
+(use-package realgud
+  :ensure (:wait t))
+(use-package realgud-lldb)
+
 ;; --- rust
 (use-package rust-mode)
 
@@ -681,3 +651,87 @@ The app is chosen from your OS's preference."
 
 ;; --- yaml-mode
 (use-package yaml-mode)
+
+;; (load-theme 'leuven)
+
+;; --- nano
+(elpaca (nano :host github
+  			  :repo "rougier/nano-emacs")
+  (require 'nano-layout)
+
+  ;; Theming Command line options (this will cancel warning messages)
+  (add-to-list 'command-switch-alist '("-dark"   . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-light"  . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-default"  . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
+  (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
+
+  ;; Theme
+  (require 'nano-faces)
+  (require 'nano-theme)
+  (require 'nano-theme-dark)
+  (require 'nano-theme-light)
+
+  (cond
+   ((member "-default" command-line-args) t)
+   ((member "-dark" command-line-args) (nano-theme-set-dark))
+   (t (nano-theme-set-light)))
+  (call-interactively 'nano-refresh-theme)
+
+  ;; Nano default settings (optional)
+  (require 'nano-defaults)
+
+  ;; Nano session saving (optional)
+  (require 'nano-session)
+
+  ;; Nano header & mode lines (optional)
+  (require 'nano-modeline)
+
+  ;; --- What I like of nano-bindings
+  ;; Close frame if not the last, kill emacs else
+  (defun nano--delete-frame-or-kill-emacs ()
+    "Delete frame or kill Emacs if there is only one frame."
+    (interactive)
+    (if (> (length (frame-list)) 1)
+        (delete-frame)
+      (save-buffers-kill-terminal)))
+  (global-set-key (kbd "C-x C-c") 'nano--delete-frame-or-kill-emacs)
+
+  ;; Open recent files 
+  (global-set-key (kbd "C-c r") 'recentf-open-files)
+
+  ;; Compact layout (need to be loaded after nano-modeline)
+  (when (member "-compact" command-line-args)
+    (require 'nano-compact))
+  
+  ;; Nano counsel configuration (optional)
+  ;; Needs "counsel" package to be installed (M-x: package-install)
+  ;; (require 'nano-counsel)
+
+  ;; Welcome message (optional)
+  (let ((inhibit-message t))
+    (message "Welcome to GNU Emacs / N Λ N O edition!")
+    (message (format "Initialization time: %s" (emacs-init-time))))
+
+  ;; Splash (optional)
+  (unless (member "-no-splash" command-line-args)
+    (require 'nano-splash))
+
+  ;; Help (optional)
+  (unless (member "-no-help" command-line-args)
+    (require 'nano-help))
+  (require 'nano-counsel))
+
+;; --- Rest
+
+(require 's)
+
+(defun upper-camel-case (start end)
+  "Replace the selected region with its contents converted to Upper Camel Case."
+  (interactive "r")
+  (let ((region-text (buffer-substring-no-properties start end)))
+    (delete-region start end)
+    (insert (s-upper-camel-case region-text))))
+(global-set-key (kbd "C-c 1") 'upper-camel-case)
+upart
