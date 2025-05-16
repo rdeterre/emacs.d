@@ -45,6 +45,16 @@
   (elpaca-use-package-mode))
 (setq use-package-always-ensure t)
 
+;; --- seq
+(defun +elpaca-unload-seq (e)
+  (and (featurep 'seq) (unload-feature 'seq t))
+  (elpaca--continue-build e))
+
+(defun +elpaca-seq-build-steps ()
+  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
+                       elpaca--pre-built-steps elpaca-build-steps))
+          (list '+elpaca-unload-seq 'elpaca--activate-package)))
+(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps) :wait t))
 
 ;; --- Standard Emacs prelude
 ;; Changes values of some default Emacs variables
@@ -63,7 +73,11 @@
 (setq-default fill-column 120
               indent-tabs-mode nil
               tab-width 2)
-(tool-bar-mode -1)
+(global-unset-key (kbd "M-<return>"))
+
+(defun ansi-colorize ()
+  (interactive)
+  (ansi-color-apply-on-region (point-min) (point-max)))
 
 ;; --- ace-window
 (use-package ace-window
@@ -94,22 +108,7 @@
     (interactive)
     (aw-switch-to-window (nth 5 (aw-window-list))))
   (setq aw-display-always nil)
-  (add-hook 'window-configuration-change-hook 'aw-update)
-  (defun nano-modeline-default-mode ()
-    (let ((buffer-name (format-mode-line "%b"))
-          (mode-name   (nano-mode-name))
-          (branch      (vc-branch))
-          (position    (concat
-                        (format-mode-line "%l:%c")
-                        " - "
-                        (window-parameter (selected-window) 'ace-window-path))))
-      (nano-modeline-compose (nano-modeline-status)
-                             buffer-name
-                             (concat "(" mode-name
-                                     (if branch (concat ", "
-                                            (propertize branch 'face 'italic)))
-                                     ")" )
-                             position))))
+  (add-hook 'window-configuration-change-hook 'aw-update))
 
 ;; --- all-the-icons
 (use-package all-the-icons
@@ -124,7 +123,21 @@
 (global-set-key "\M-m" 'beginning-of-line-text)
 
 ;; --- caser
+;; TODO: check
 ;; (use-package caser) ; broken with elpaca for some reason
+
+;; --- casual
+; (use-package casual
+;   :bind
+;   (:map calc-mode-map
+;         ("C-o" . casual-main-menu)))
+
+;; --- cmake
+(use-package cmake-mode
+  :mode "\\.cmake$")
+
+;; --- code-cells
+(use-package code-cells)
 
 ;; --- compile
 (global-set-key (kbd "C-c k") 'compile)
@@ -159,8 +172,12 @@
 (use-package crux
   :bind (("C-c o" . crux-open-with)))
 
+(use-package csv-mode
+  :mode "\\.csv$")
+
 ;; --- dart
-(use-package dart-mode)
+(use-package dart-mode
+  :mode "\\.dart$")
 
 ;; --- deadgrep
 (use-package deadgrep
@@ -181,13 +198,32 @@
   (add-hook 'cmake-mode-hook
             (lambda () (setq-local devdocs-current-docs '("cmake~3.26"))))
   (add-hook 'python-mode-hook
-            (lambda () (setq-loadl devdocs-current-docs '("python~3.10")))))
-
+            (lambda () (setq-loadl devdocs-current-docs '("python~3.10"))))
+  (defun devdocs-nano-modeline ()
+    (setq-local header-line-format
+                (let ((buffer-name (format-mode-line "%b"))
+                      (mode-name (nano-mode-name))
+                      (branch (eval (cadr devdocs-header-line)))
+                      (position (format-mode-line "%l:%c")))
+                  (nano-modeline-compose (nano-modeline-status)
+                                         buffer-name
+                                         (concat "(" mode-name
+                                                 (if branch (concat ", "
+                                                                    (propertize branch 'face 'italic)))
+                                                 ")" )
+                                         position))))
+  (add-hook 'devdocs-mode-hook #'devdocs-nano-modeline))
+    
 ;; --- dired
 (setq dired-hide-details-mode t)
+(add-hook 'dired-mode-hook 'auto-revert-mode)
 
 ;; --- Dockerfiles
-(use-package dockerfile-mode)
+(use-package dockerfile-mode
+  :mode "Dockerfile")
+
+;; --- ediff
+(setq ediff-window-setup-function #'ediff-setup-windows-plain)
 
 ;; --- editorconfig
 (use-package editorconfig
@@ -223,12 +259,19 @@
   (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
 
   :bind (("C-c a" . eglot-code-actions)
-         ("C-c f" . eglot-format-buffer)
+         ("C-c f f" . eglot-format-buffer)
          ("C-M-." . eglot-find-typeDefinition)
          ("C-c e" . eglot-rename)))
 
+;; --- git-link
+(use-package git-link
+  :bind (("C-c f l" . git-link)
+         ("C-c f c" . git-link-commit)
+         ("C-c f h" . git-link-homepage)))
+
 ;; --- Go
-(use-package go-mode)
+(use-package go-mode
+  :mode "\\.go")
 
 ;; --- gptel
 (use-package gptel
@@ -269,9 +312,6 @@
   (require 'golden-ratio-scroll-screen)
   (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
   (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up))
-
-;; --- highlight
-(setq highlight-nonselected-windows t)
 
 ;; --- ivy/swiper/counsel
 (use-package ivy
@@ -461,12 +501,6 @@ The app is chosen from your OS's preference."
 (eval-after-load 'org
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images))
 
-(use-package org-modern
-  :init
-  (setq org-modern-block-name nil)
-  :config
-  (add-hook 'org-mode-hook #'org-modern-mode))
-
 ;; ; Code to copy links out of org-mode
 ;; ; See https://emacs.stackexchange.com/a/3990
 ;; (defun org-extract-link-url (text)
@@ -540,16 +574,6 @@ The app is chosen from your OS's preference."
 ;; (global-set-key (kbd "C-c r") 'restart-emacs)
 ;(use-package seq)
 
-(defun +elpaca-unload-seq (e)
-  (and (featurep 'seq) (unload-feature 'seq t))
-  (elpaca--continue-build e))
-
-;; You could embed this code directly in the reicpe, I just abstracted it into a function.
-(defun +elpaca-seq-build-steps ()
-  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                       elpaca--pre-built-steps elpaca-build-steps))
-          (list '+elpaca-unload-seq 'elpaca--activate-package)))
-(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 (use-package transient
   :ensure (:wait t))
 
@@ -579,12 +603,23 @@ The app is chosen from your OS's preference."
                (t
                 '(display-buffer-same-window)))))))
 
+(defun git-sync ()
+  (interactive)
+  (magit-checkout "master")
+  (magit-status)
+  (magit-fetch-all ())
+  (magit-pull-from-upstream nil)
+  (revert-buffer-quick))
+(global-set-key (kbd "C-c h") #'git-sync)
 
 (defun open-init-file ()
   "Open the init file."
   (interactive)
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
+
+;; --- pdf-tools
+(use-package pdf-tools)
 
 ;; --- prettier-js
 (use-package prettier-js)
@@ -599,10 +634,10 @@ The app is chosen from your OS's preference."
   (projectile-load-known-projects)
   (projectile-commander-bindings)
   (defun project-override (dir)
-  (let ((override (locate-dominating-file dir ".project.el")))
-    (if override
-      (cons 'vc override)
-      nil)))
+    (let ((override (locate-dominating-file dir ".project.el")))
+      (if override
+          (cons 'vc override)
+        nil)))
   (add-hook 'project-find-functions #'project-override)
   :bind-keymap 
   (("C-c p" . projectile-command-map)
@@ -611,22 +646,77 @@ The app is chosen from your OS's preference."
 (use-package counsel-projectile
   :config (counsel-projectile-mode t))
 
+(global-set-key (kbd "C-'") 'projectile-run-vterm)
+(global-set-key (kbd "C-c '") 'projectile-run-vterm)
+(global-set-key (kbd "C-c C-k") 'kill-compilation)
+
 ;; --- realgud
 (use-package realgud
   :ensure (:wait t))
 (use-package realgud-lldb)
 
+;; --- ruff
+(use-package flymake-ruff
+  :ensure t
+  :hook (python-mode . flymake-ruff-load))
+
 ;; --- rust
-(use-package rust-mode)
+(use-package rust-mode
+  :mode "\\.rs")
 
 ;; ;; --- smartparens
 ;; (use-package smartparens)
 
-;; ;; --- smithy
-;; (use-package smithy-mode)
+;; --- Tree-sitter
+(defun mp-setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             ;; Note the version numbers. These are the versions that
+             ;; are known to work with Combobulate *and* Emacs.
+             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.20.0"))
+               (go . ("https://github.com/tree-sitter/tree-sitter-go" "v0.20.0"))
+               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.20.1"))
+               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.20.1" "src"))
+               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.20.2"))
+               (markdown . ("https://github.com/ikatyang/tree-sitter-markdown" "v0.7.1"))
+               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.20.4"))
+               (rust . ("https://github.com/tree-sitter/tree-sitter-rust" "v0.21.2"))
+               (toml . ("https://github.com/tree-sitter/tree-sitter-toml" "v0.5.1"))
+               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "tsx/src"))
+               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.20.3" "typescript/src"))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
+      (add-to-list 'treesit-language-source-alist grammar)
+      ;; Only install `grammar' if we don't already have it
+      ;; installed. However, if you want to *update* a grammar then
+      ;; this obviously prevents that from happening.
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+(add-to-list 'auto-mode-alist '("\\.ts$" . tsx-ts-mode))
 
 ;; --- vterm
-(use-package vterm)
+(use-package vterm
+  :bind (:map vterm-mode-map
+              ("C-q" . vterm-send-next-key))
+  :init
+  (setq vterm-max-scrollback 50000)
+  :config
+  (define-key vterm-mode-map (kbd "M-1") nil)
+  (define-key vterm-mode-map (kbd "M-2") nil)
+  (define-key vterm-mode-map (kbd "M-3") nil)
+  (define-key vterm-mode-map (kbd "M-4") nil)
+  (define-key vterm-mode-map (kbd "M-5") nil)
+  (define-key vterm-mode-map (kbd "M-6") nil)
+  (defun disable-vterm-copy-mode ()
+    (interactive)
+    (vterm-copy-mode -1))
+  (define-key vterm-copy-mode-map (kbd "<return>") #'disable-vterm-copy-mode)
+
+  (defun set-no-process-query-on-exit ()
+    (let ((proc (get-buffer-process (current-buffer))))
+      (when (processp proc)
+        (set-process-query-on-exit-flag proc nil))))
+  (add-hook 'vterm-mode-hook 'set-no-process-query-on-exit))
 
 (use-package vterm-toggle
   :bind (("C-;" . vterm-toggle)
@@ -634,6 +724,10 @@ The app is chosen from your OS's preference."
   :config
   (setq vterm-toggle-project-root t)
   (setq vterm-toggle-scope 'project))
+
+(defun named-vterm (term-name)
+  (interactive "sTerminal purpose: ")
+  (vterm (concat "vterm-" term-name)))
 
 ;; --- which-key
 (use-package which-key
@@ -657,6 +751,10 @@ The app is chosen from your OS's preference."
 ;; --- nano
 (elpaca (nano :host github
   			  :repo "rougier/nano-emacs")
+  (setq nano-font-family-monospaced "Fira Mono")
+  ;; (setq nano-font-family-monospaced "SF Mono")
+  (setq nano-font-size 12)
+  ;; (call-interactively 'nano-refresh-theme)
   (require 'nano-layout)
 
   ;; Theming Command line options (this will cancel warning messages)
@@ -673,38 +771,22 @@ The app is chosen from your OS's preference."
   (require 'nano-theme-dark)
   (require 'nano-theme-light)
 
-  (cond
-   ((member "-default" command-line-args) t)
-   ((member "-dark" command-line-args) (nano-theme-set-dark))
-   (t (nano-theme-set-light)))
-  (call-interactively 'nano-refresh-theme)
-
-  ;; Nano default settings (optional)
-  (require 'nano-defaults)
-
   ;; Nano session saving (optional)
   (require 'nano-session)
 
   ;; Nano header & mode lines (optional)
   (require 'nano-modeline)
 
-  ;; --- What I like of nano-bindings
-  ;; Close frame if not the last, kill emacs else
-  (defun nano--delete-frame-or-kill-emacs ()
-    "Delete frame or kill Emacs if there is only one frame."
-    (interactive)
-    (if (> (length (frame-list)) 1)
-        (delete-frame)
-      (save-buffers-kill-terminal)))
-  (global-set-key (kbd "C-x C-c") 'nano--delete-frame-or-kill-emacs)
-
-  ;; Open recent files 
-  (global-set-key (kbd "C-c r") 'recentf-open-files)
+  (defun nano-modeline-term-mode ()
+    (nano-modeline-compose " >_ "
+                           (buffer-name)
+                           (concat "(" shell-file-name ")")
+                           (shorten-directory default-directory 32)))
 
   ;; Compact layout (need to be loaded after nano-modeline)
   (when (member "-compact" command-line-args)
     (require 'nano-compact))
-  
+
   ;; Nano counsel configuration (optional)
   ;; Needs "counsel" package to be installed (M-x: package-install)
   ;; (require 'nano-counsel)
@@ -721,7 +803,26 @@ The app is chosen from your OS's preference."
   ;; Help (optional)
   (unless (member "-no-help" command-line-args)
     (require 'nano-help))
-  (require 'nano-counsel))
+
+  (require 'my-nano-writer)
+  (add-to-list 'auto-mode-alist '("\\.org$" . my-writer-mode))
+
+  (cond
+   ((member "-default" command-line-args) t)
+   ((member "-dark" command-line-args) (nano-theme-set-dark))
+   (t (nano-theme-set-light)))
+  (call-interactively 'nano-refresh-theme)
+
+  (set-face-attribute 'nano-face-strong nil
+                      :foreground nano-color-strong
+                      :weight 'bold)
+  (set-face 'font-lock-variable-name-face 'default)
+  (set-face 'org-list-dt 'nano-face-strong)
+  (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1))
+
+(global-set-key (kbd "C-x k") 'kill-current-buffer)
 
 ;; --- Rest
 
@@ -734,4 +835,3 @@ The app is chosen from your OS's preference."
     (delete-region start end)
     (insert (s-upper-camel-case region-text))))
 (global-set-key (kbd "C-c 1") 'upper-camel-case)
-upart
