@@ -45,17 +45,6 @@
   (elpaca-use-package-mode))
 (setq use-package-always-ensure t)
 
-;; --- seq
-(defun +elpaca-unload-seq (e)
-  (and (featurep 'seq) (unload-feature 'seq t))
-  (elpaca--continue-build e))
-
-(defun +elpaca-seq-build-steps ()
-  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                       elpaca--pre-built-steps elpaca-build-steps))
-          (list '+elpaca-unload-seq 'elpaca--activate-package)))
-(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps) :wait t))
-
 ;; --- Standard Emacs prelude
 ;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
