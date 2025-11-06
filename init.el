@@ -1,12 +1,12 @@
 ;; --- elpaca prelude
 ;; Bootstraps elpaca and sets up the use-package integration
 
-(defvar elpaca-installer-version 0.8)
+(defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
+                              :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -16,7 +16,7 @@
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
+    (when (<= emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
         (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
                   ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
@@ -36,7 +36,7 @@
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
@@ -280,6 +280,13 @@
   :bind (("C-c RET" . gptel-send)
          ("C-c g" . gptel)
          ("C-c h" . gptel-send)))
+(use-package aidermacs)
+
+;; --- grip - Github Readme Instant Preview
+(use-package grip-mode
+  :config (setq grip-command 'auto) ;; auto, grip, go-grip or mdopen
+  :bind (:map markdown-mode-command-map
+         ("g" . grip-mode)))
 
 ;; --- Emacs Everywhere
 (use-package emacs-everywhere)
@@ -749,78 +756,86 @@ The app is chosen from your OS's preference."
 ;; (load-theme 'leuven)
 
 ;; --- nano
-(elpaca (nano :host github
-  			  :repo "rougier/nano-emacs")
-  (setq nano-font-family-monospaced "Fira Mono")
-  ;; (setq nano-font-family-monospaced "SF Mono")
-  (setq nano-font-size 12)
-  ;; (call-interactively 'nano-refresh-theme)
-  (require 'nano-layout)
+(setq use-nano nil)
+(if use-nano
+    (elpaca (nano :host github
+  			          :repo "rougier/nano-emacs")
+      (setq nano-font-family-monospaced "Fira Mono")
+      ;; (setq nano-font-family-monospaced "SF Mono")
+      (setq nano-font-size 12)
+      ;; (call-interactively 'nano-refresh-theme)
+      (require 'nano-layout)
 
-  ;; Theming Command line options (this will cancel warning messages)
-  (add-to-list 'command-switch-alist '("-dark"   . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-light"  . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-default"  . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
-  (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
+      ;; Theming Command line options (this will cancel warning messages)
+      (add-to-list 'command-switch-alist '("-dark"   . (lambda (args))))
+      (add-to-list 'command-switch-alist '("-light"  . (lambda (args))))
+      (add-to-list 'command-switch-alist '("-default"  . (lambda (args))))
+      (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
+      (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
+      (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
+      (setq nano-font-family-proportional "San Francisco")
 
-  ;; Theme
-  (require 'nano-faces)
-  (require 'nano-theme)
-  (require 'nano-theme-dark)
-  (require 'nano-theme-light)
+      ;; Theme
+      (require 'nano-faces)
+      (require 'nano-theme)
+      (require 'nano-theme-dark)
+      (require 'nano-theme-light)
 
-  ;; Nano session saving (optional)
-  (require 'nano-session)
+      ;; Nano session saving (optional)
+      (require 'nano-session)
 
-  ;; Nano header & mode lines (optional)
-  (require 'nano-modeline)
+      ;; Nano header & mode lines (optional)
+      (require 'nano-modeline)
 
-  (defun nano-modeline-term-mode ()
-    (nano-modeline-compose " >_ "
-                           (buffer-name)
-                           (concat "(" shell-file-name ")")
-                           (shorten-directory default-directory 32)))
+      (defun nano-modeline-term-mode ()
+        (nano-modeline-compose " >_ "
+                               (buffer-name)
+                               (concat "(" shell-file-name ")")
+                               (shorten-directory default-directory 32)))
 
-  ;; Compact layout (need to be loaded after nano-modeline)
-  (when (member "-compact" command-line-args)
-    (require 'nano-compact))
+      ;; Compact layout (need to be loaded after nano-modeline)
+      (when (member "-compact" command-line-args)
+        (require 'nano-compact))
 
-  ;; Nano counsel configuration (optional)
-  ;; Needs "counsel" package to be installed (M-x: package-install)
-  ;; (require 'nano-counsel)
+      ;; Nano counsel configuration (optional)
+      ;; Needs "counsel" package to be installed (M-x: package-install)
+      ;; (require 'nano-counsel)
 
-  ;; Welcome message (optional)
-  (let ((inhibit-message t))
-    (message "Welcome to GNU Emacs / N Λ N O edition!")
-    (message (format "Initialization time: %s" (emacs-init-time))))
+      ;; Welcome message (optional)
+      (let ((inhibit-message t))
+        (message "Welcome to GNU Emacs / N Λ N O edition!")
+        (message (format "Initialization time: %s" (emacs-init-time))))
 
-  ;; Splash (optional)
-  (unless (member "-no-splash" command-line-args)
-    (require 'nano-splash))
+      ;; Splash (optional)
+      (unless (member "-no-splash" command-line-args)
+        (require 'nano-splash))
 
-  ;; Help (optional)
-  (unless (member "-no-help" command-line-args)
-    (require 'nano-help))
+      ;; Help (optional)
+      (unless (member "-no-help" command-line-args)
+        (require 'nano-help))
 
-  (require 'my-nano-writer)
-  (add-to-list 'auto-mode-alist '("\\.org$" . my-writer-mode))
+      (require 'my-nano-writer)
+      (add-to-list 'auto-mode-alist '("\\.org$" . my-writer-mode))
 
-  (cond
-   ((member "-default" command-line-args) t)
-   ((member "-dark" command-line-args) (nano-theme-set-dark))
-   (t (nano-theme-set-light)))
-  (call-interactively 'nano-refresh-theme)
+      (cond
+       ((member "-default" command-line-args) t)
+       ((member "-dark" command-line-args) (nano-theme-set-dark))
+       (t (nano-theme-set-light)))
+      (call-interactively 'nano-refresh-theme)
 
-  (set-face-attribute 'nano-face-strong nil
-                      :foreground nano-color-strong
-                      :weight 'bold)
-  (set-face 'font-lock-variable-name-face 'default)
-  (set-face 'org-list-dt 'nano-face-strong)
-  (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1))
+      (set-face-attribute 'nano-face-strong nil
+                          :foreground nano-color-strong
+                          :weight 'bold)
+      (set-face 'font-lock-variable-name-face 'default)
+      (set-face 'org-list-dt 'nano-face-strong)
+      (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
+      (scroll-bar-mode -1)
+      (tool-bar-mode -1)))
+(unless use-nano
+  (progn
+    (load-theme 'leuven)
+    (tool-bar-mode -1)))
+
 
 (global-set-key (kbd "C-x k") 'kill-current-buffer)
 
