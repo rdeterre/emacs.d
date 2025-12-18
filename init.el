@@ -265,11 +265,21 @@
 ;; --- gptel
 (use-package gptel
   :config
-  (setq gptel-default-mode 'org-mode)
+  (setq gptel-default-mode 'org-mode
+        gptel-mode 'mistral-small
+        gptel-backend (gptel-make-openai "MistralLeChat"
+                        :host "api.mistral.ai"
+                        :endpoint "/v1/chat/completions"
+                        :protocol "https"
+                        :key "0NKvFWiOkUhpVvelYTRcsfhYQrUCduDd"
+                        :models '("mistral-small")))
   :bind (("C-c RET" . gptel-send)
          ("C-c g" . gptel)
          ("C-c h" . gptel-send)))
-(use-package aidermacs)
+(use-package aidermacs
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :custom
+  (aidermacs-default-model "sonnet"))
 
 ;; --- grip - Github Readme Instant Preview
 (use-package grip-mode
@@ -645,6 +655,9 @@ The app is chosen from your OS's preference."
 (global-set-key (kbd "C-'") 'projectile-run-vterm)
 (global-set-key (kbd "C-c '") 'projectile-run-vterm)
 (global-set-key (kbd "C-c C-k") 'kill-compilation)
+
+;; --- python
+(use-package python-black)
 
 ;; --- realgud
 (use-package realgud
