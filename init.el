@@ -1,4 +1,4 @@
-;; --- elpaca prelude
+;; --- elpaca prelude  -*- lexical-binding: t; -*-
 ;; Bootstraps elpaca and sets up the use-package integration
 
 (defvar elpaca-installer-version 0.11)
@@ -239,6 +239,8 @@
                '(rust-mode "rust-analyzer"))
   (add-to-list 'eglot-server-programs
                '(TSX . ("typescript-language-server" "--stdio")))
+  (if (string-equal system-type "darwin")
+      (setq eglot-code-action-indicator "*"))
 
   ;; Damn .projectile file
   (defun joaot/find-projectile-project ()
@@ -410,7 +412,7 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
 
 ;; --- markdown-mode
-(use-package markdown-mode)
+;; (use-package markdown-mode)
 
 ;; --- multiple-cursors
 (use-package multiple-cursors
@@ -484,7 +486,7 @@ The app is chosen from your OS's preference."
 ;; --- org-mode
 (global-set-key (kbd "C-c l") #'org-store-link)
 ;(global-set-key (kbd "C-c g") #'org-agenda)
-(global-set-key (kbd "C-c c") #'org-capture)
+;; (global-set-key (kbd "C-c c") #'org-capture)
 
 (org-babel-do-load-languages
 'org-babel-load-languages
@@ -624,6 +626,32 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
+;; --- ai-code
+(use-package ai-code
+  :ensure (:host github :repo "tninja/ai-code-interface.el")
+  :config
+  ;; use codex as backend, other options are 'claude-code, 'gemini, 'github-copilot-cli, 'opencode, 'grok, 'cursor, 'kiro, 'codebuddy, 'aider, 'claude-code-ide, 'claude-code-el
+  (ai-code-set-backend 'gemini)
+  ;; Optional: Use eat if you prefer, by default it is vterm
+  ;; (setq ai-code-backends-infra-terminal-backend 'eat) ;; the way to config all native supported CLI. for external backend such as claude-code-ide.el and claude-code.el, please check their config
+  ;; Optional: Enable @ file completion in comments and AI sessions
+  (ai-code-prompt-filepath-completion-mode 1)
+  ;; Optional: Ask AI to run test after code changes, for a tighter build-test loop
+  (setq ai-code-auto-test-type 'test-after-change
+        ai-code-backends-infra-use-side-window nil)
+  ;; Optional: In AI session buffers, SPC in Evil normal state triggers the prompt-enter UI
+  (with-eval-after-load 'evil (ai-code-backends-infra-evil-setup))
+  ;; Optional: Turn on auto-revert buffer, so that the AI code change automatically appears in the buffer
+  (global-auto-revert-mode 1)
+  (setq auto-revert-interval 1) ;; set to 1 second for faster update
+  ;; (global-set-key (kbd "C-c a C") #'ai-code-toggle-filepath-completion)
+  ;; Optional: Set up Magit integration for AI commands in Magit popups
+  (with-eval-after-load 'magit
+    (ai-code-magit-setup-transients))
+  :bind
+  ;; Enable global keybinding for the main menu
+  (("C-c c" . #'ai-code-menu)))
+
 ;; --- pdf-tools
 (use-package pdf-tools)
 
@@ -660,9 +688,9 @@ The app is chosen from your OS's preference."
 (use-package python-black)
 
 ;; --- realgud
-(use-package realgud
-  :ensure (:wait t))
-(use-package realgud-lldb)
+;; (use-package realgud
+;;   :ensure (:wait t))
+;; (use-package realgud-lldb)
 
 ;; --- ruff
 (use-package flymake-ruff
