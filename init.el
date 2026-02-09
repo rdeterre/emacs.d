@@ -164,6 +164,28 @@
 (use-package csv-mode
   :mode "\\.csv$")
 
+;; --- dap-mode
+(use-package dap-mode
+  :config
+  ;; Configure Node.js debug adapter
+  (dap-node-setup)
+
+  ;; Define a debug template for Jest tests
+  (require 'dap-node)
+  (dap-node-setup)
+  (dap-register-debug-template
+   "Node Jest Test"
+   (list :type "node"
+         :request "launch"
+         :name "Jest Test"
+         :program "${workspaceFolder}/node_modules/.bin/jest"
+         :args (list "--runInBand" (buffer-file-name))
+         :cwd "${workspaceFolder}"
+         :sourceMaps t
+         :skipFiles '("<node_internals>/**" "node_modules/**")
+         :protocol "inspector"
+         :runtimeExecutable "node")))
+
 ;; --- dart
 (use-package dart-mode
   :mode "\\.dart$")
@@ -626,31 +648,19 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
-;; --- ai-code
-(use-package ai-code
-  :ensure (:host github :repo "tninja/ai-code-interface.el")
+;; --- claude-code
+(use-package claude-code
+  :ensure (:host github :repo "stevemolitor/claude-code.el")
   :config
-  ;; use codex as backend, other options are 'claude-code, 'gemini, 'github-copilot-cli, 'opencode, 'grok, 'cursor, 'kiro, 'codebuddy, 'aider, 'claude-code-ide, 'claude-code-el
-  (ai-code-set-backend 'gemini)
-  ;; Optional: Use eat if you prefer, by default it is vterm
-  ;; (setq ai-code-backends-infra-terminal-backend 'eat) ;; the way to config all native supported CLI. for external backend such as claude-code-ide.el and claude-code.el, please check their config
-  ;; Optional: Enable @ file completion in comments and AI sessions
-  (ai-code-prompt-filepath-completion-mode 1)
-  ;; Optional: Ask AI to run test after code changes, for a tighter build-test loop
-  (setq ai-code-auto-test-type 'test-after-change
-        ai-code-backends-infra-use-side-window nil)
-  ;; Optional: In AI session buffers, SPC in Evil normal state triggers the prompt-enter UI
-  (with-eval-after-load 'evil (ai-code-backends-infra-evil-setup))
-  ;; Optional: Turn on auto-revert buffer, so that the AI code change automatically appears in the buffer
-  (global-auto-revert-mode 1)
-  (setq auto-revert-interval 1) ;; set to 1 second for faster update
-  ;; (global-set-key (kbd "C-c a C") #'ai-code-toggle-filepath-completion)
-  ;; Optional: Set up Magit integration for AI commands in Magit popups
-  (with-eval-after-load 'magit
-    (ai-code-magit-setup-transients))
+  (claude-code-mode)
+  (setq claude-code-program "gemini"
+        claude-code-terminal-backend 'vterm)
+  :bind-keymap ("C-c c" . claude-code-command-map)
+
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
   :bind
-  ;; Enable global keybinding for the main menu
-  (("C-c c" . #'ai-code-menu)))
+  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
+
 
 ;; --- pdf-tools
 (use-package pdf-tools)
