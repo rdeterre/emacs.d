@@ -164,28 +164,6 @@
 (use-package csv-mode
   :mode "\\.csv$")
 
-;; --- dap-mode
-(use-package dap-mode
-  :config
-  ;; Configure Node.js debug adapter
-  (dap-node-setup)
-
-  ;; Define a debug template for Jest tests
-  (require 'dap-node)
-  (dap-node-setup)
-  (dap-register-debug-template
-   "Node Jest Test"
-   (list :type "node"
-         :request "launch"
-         :name "Jest Test"
-         :program "${workspaceFolder}/node_modules/.bin/jest"
-         :args (list "--runInBand" (buffer-file-name))
-         :cwd "${workspaceFolder}"
-         :sourceMaps t
-         :skipFiles '("<node_internals>/**" "node_modules/**")
-         :protocol "inspector"
-         :runtimeExecutable "node")))
-
 ;; --- dart
 (use-package dart-mode
   :mode "\\.dart$")
