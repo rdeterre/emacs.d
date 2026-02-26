@@ -724,7 +724,8 @@ The app is chosen from your OS's preference."
   :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
   :bind (("C-c f ." . treesit-fold-toggle)
          ("C-c f o" . treesit-fold-open-all)
-         ("C-c f l" . treesit-fold-close-all))
+         ("C-c f l" . treesit-fold-close-all)
+         ("C-c . " . treesit-fold-toggle))
   :config
   (setq treesit-fold-line-count-show t)
   (global-treesit-fold-mode 1))
