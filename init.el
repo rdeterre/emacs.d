@@ -99,6 +99,14 @@
   (setq aw-display-always nil)
   (add-hook 'window-configuration-change-hook 'aw-update))
 
+;; --- agent-shell
+(use-package agent-shell
+  :ensure t
+  :bind
+  (("C-c c" . agent-shell))
+  :config
+  (setq agent-shell-header-style 'text))
+
 ;; --- all-the-icons
 (use-package all-the-icons
   :config
@@ -120,6 +128,9 @@
 ;   :bind
 ;   (:map calc-mode-map
 ;         ("C-o" . casual-main-menu)))
+
+;; --- clang-format
+(use-package clang-format)
 
 ;; --- cmake
 (use-package cmake-mode
@@ -202,10 +213,36 @@
                                                  ")" )
                                          position))))
   (add-hook 'devdocs-mode-hook #'devdocs-nano-modeline))
+
+;; --- disaster
+(use-package disaster)
     
 ;; --- dired
-(setq dired-hide-details-mode t)
 (add-hook 'dired-mode-hook 'auto-revert-mode)
+(setq dired-recursive-copies 'always
+      delete-by-moving-to-trash t
+      ;; Adding human readable units
+      ;; -A List all entries except for "." and ".."
+      ;; -l List in long format
+      ;; -h Use human readable units
+      dired-listing-switches "-Alh"
+      dired-dwim-target t
+      dired-auto-revert-buffer t)
+(use-package dired-collapse
+  :ensure t)
+(use-package dired-subtree
+  :ensure t
+  :bind (:map dired-mode-map
+              ("<tab>" . dired-subtree-toggle)
+              ("<backtab>" . dired-subtree-cycle))
+  :config
+                                        ; Make all faces in subtree use default background
+  (dolist (face (custom-group-members 'dired-subtree-faces nil))
+    (when (and (consp face) (eq (cadr face) 'custom-face))
+      (set-face-attribute (car face) nil :background 'unspecified))))
+(put 'dired-find-alternate-file 'disabled nil)
+(setq dired-omit-files "^\\..*$\\|^\\.||.$")
+(setq dired-omit-mode t)
 
 ;; --- Dockerfiles
 (use-package dockerfile-mode
@@ -278,10 +315,6 @@
   :bind (("C-c RET" . gptel-send)
          ("C-c g" . gptel)
          ("C-c h" . gptel-send)))
-(use-package aidermacs
-  :bind (("C-c a" . aidermacs-transient-menu))
-  :custom
-  (aidermacs-default-model "sonnet"))
 
 ;; --- grip - Github Readme Instant Preview
 (use-package grip-mode
