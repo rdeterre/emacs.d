@@ -218,16 +218,23 @@
 (use-package disaster)
     
 ;; --- dired
-(add-hook 'dired-mode-hook 'auto-revert-mode)
-(setq dired-recursive-copies 'always
-      delete-by-moving-to-trash t
-      ;; Adding human readable units
-      ;; -A List all entries except for "." and ".."
-      ;; -l List in long format
-      ;; -h Use human readable units
-      dired-listing-switches "-Alh"
-      dired-dwim-target t
-      dired-auto-revert-buffer t)
+(use-package dired
+  :ensure nil
+  :hook ((dired-mode . dired-hide-details-mode)
+         (dired-mode . auto-revert-mode))
+  :config
+  (setq dired-recursive-copies 'always
+        delete-by-moving-to-trash t
+        ;; Adding human readable units
+        ;; -A List all entries except for "." and ".."
+        ;; -l List in long format
+        ;; -h Use human readable units
+        dired-listing-switches "-Alh"
+        dired-dwim-target t
+        dired-auto-revert-buffer t
+        dired-omit-files "^\\..*$\\|^\\.||.$"
+        dired-omit-mode t)
+  (put 'dired-find-alternate-file 'disabled nil))
 (use-package dired-collapse
   :ensure t)
 (use-package dired-subtree
@@ -240,9 +247,7 @@
   (dolist (face (custom-group-members 'dired-subtree-faces nil))
     (when (and (consp face) (eq (cadr face) 'custom-face))
       (set-face-attribute (car face) nil :background 'unspecified))))
-(put 'dired-find-alternate-file 'disabled nil)
-(setq dired-omit-files "^\\..*$\\|^\\.||.$")
-(setq dired-omit-mode t)
+
 
 ;; --- Dockerfiles
 (use-package dockerfile-mode
