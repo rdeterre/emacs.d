@@ -339,9 +339,6 @@
 (use-package expand-region
   :bind (("C-=" . er/expand-region)))
 
-;; --- f
-(use-package f)
-
 ;; --- FFAP
 (global-set-key (kbd "C-c .") 'ffap)
 
