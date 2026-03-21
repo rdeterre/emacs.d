@@ -661,20 +661,6 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
-;; --- claude-code
-(use-package claude-code
-  :ensure (:host github :repo "stevemolitor/claude-code.el")
-  :config
-  (claude-code-mode)
-  (setq claude-code-program "gemini"
-        claude-code-terminal-backend 'vterm)
-  :bind-keymap ("C-c c" . claude-code-command-map)
-
-  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
-  :bind
-  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
-
-
 ;; --- pdf-tools
 (use-package pdf-tools)
 
