@@ -775,13 +775,6 @@ The app is chosen from your OS's preference."
         (set-process-query-on-exit-flag proc nil))))
   (add-hook 'vterm-mode-hook 'set-no-process-query-on-exit))
 
-(use-package vterm-toggle
-  :bind (("C-;" . vterm-toggle)
-         ("C-'" . vterm-toggle-cd))
-  :config
-  (setq vterm-toggle-project-root t)
-  (setq vterm-toggle-scope 'project))
-
 (defun named-vterm (term-name)
   (interactive "sTerminal purpose: ")
   (vterm (concat "vterm-" term-name)))
