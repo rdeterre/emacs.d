@@ -108,7 +108,8 @@
    ("<tab>" . agent-shell-ui-toggle-fragment-at-point))
   :config
   (setq agent-shell-header-style 'text
-        agent-shell-session-strategy 'prompt))
+        agent-shell-session-strategy 'prompt
+        agent-shell-mistral-authentication (agent-shell-mistral-make-authentication :api-key "0NKvFWiOkUhpVvelYTRcsfhYQrUCduDd")))
 
 ;; --- all-the-icons
 (use-package all-the-icons
