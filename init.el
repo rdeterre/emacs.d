@@ -109,7 +109,8 @@
   :config
   (setq agent-shell-header-style 'text
         agent-shell-session-strategy 'prompt
-        agent-shell-mistral-authentication (agent-shell-mistral-make-authentication :api-key "0NKvFWiOkUhpVvelYTRcsfhYQrUCduDd")))
+        agent-shell-mistral-authentication (agent-shell-mistral-make-authentication :api-key "0NKvFWiOkUhpVvelYTRcsfhYQrUCduDd")
+        agent-shell-context-sources '(files region error)))
 
 ;; --- all-the-icons
 (use-package all-the-icons
