@@ -663,6 +663,10 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
+;; --- ghostel
+(use-package ghostel
+  :ensure (:host github :repo "dakra/ghostel"))
+
 ;; --- pdf-tools
 (use-package pdf-tools)
 
@@ -671,6 +675,7 @@ The app is chosen from your OS's preference."
 
 ;; --- project.el - projectile
 (use-package projectile
+  :ensure (:host github :repo "rdeterre/projectile" :ref "ghostel")
   :demand t
   :init
   (setq projectile-switch-project-action #'projectile-find-file)
