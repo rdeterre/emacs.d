@@ -665,7 +665,9 @@ The app is chosen from your OS's preference."
 
 ;; --- ghostel
 (use-package ghostel
-  :ensure (:host github :repo "dakra/ghostel"))
+  :ensure (:host github :repo "dakra/ghostel")
+  :bind (:map ghostel-copy-mode-map
+         ("RET" . ghostel-copy-mode-exit)))
 
 ;; --- pdf-tools
 (use-package pdf-tools)
