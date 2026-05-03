@@ -343,7 +343,7 @@ numbered code content, matching what agent-shell sends to a shell."
   :bind (("C-c a" . eglot-code-actions)
          ("C-c f f" . eglot-format-buffer)
          ("C-M-." . eglot-find-typeDefinition)
-         ("C-c e" . eglot-rename)))
+         ("C-c r" . eglot-rename)))
 
 ;; --- git-link
 (use-package git-link
