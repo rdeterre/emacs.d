@@ -58,6 +58,7 @@
       gc-cons-threshold 80000000
       highlight-nonselected-windows t
       initial-major-mode 'org-mode
+      vc-follow-symlinks t  ; suppress "follow symlink into git repo?" prompt on M-.
       visible-bell t)
 (setq-default fill-column 120
               indent-tabs-mode nil
