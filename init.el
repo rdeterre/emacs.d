@@ -706,6 +706,22 @@ The app is chosen from your OS's preference."
   (find-file user-init-file))
 (global-set-key (kbd "C-c i") 'open-init-file)
 
+(defun forward-to-word-start (&optional n)
+  "Move to the beginning of the next word."
+  (interactive "^p")
+  (dotimes (_ (or n 1))
+    (skip-syntax-forward "w")
+    (skip-syntax-forward "^w")))
+(global-set-key (kbd "M-F") #'forward-to-word-start)
+
+(defun backward-to-word-end (&optional n)
+  "Move to the end of the previous word."
+  (interactive "^p")
+  (dotimes (_ (or n 1))
+    (skip-syntax-backward "w")
+    (skip-syntax-backward "^w")))
+(global-set-key (kbd "M-B") #'backward-to-word-end)
+
 ;; --- ghostel
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
