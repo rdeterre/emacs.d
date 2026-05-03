@@ -112,6 +112,49 @@
         agent-shell-show-welcome-message nil
         agent-shell-context-sources '(files region error)))
 
+;; --- claude-code region reference
+(defun claude-code-copy-region (start end)
+  "Copy a Claude Code-friendly reference for the active region to the kill ring.
+Format: relative-or-absolute-path:start_line-end_line followed by the
+numbered code content, matching what agent-shell sends to a shell."
+  (interactive "r")
+  (unless (use-region-p)
+    (user-error "No region selected"))
+  (let* ((file (buffer-file-name))
+         (root (or (and (fboundp 'projectile-project-root)
+                        (ignore-errors (projectile-project-root)))
+                   default-directory))
+         (rel-file (if (and file root (file-in-directory-p file root))
+                       (file-relative-name file root)
+                     file))
+         (line-start (line-number-at-pos start))
+         (line-end (line-number-at-pos (if (and (> end start)
+                                                (= (char-before end) ?\n))
+                                           (1- end)
+                                         end)))
+         (header (if rel-file
+                     (format "%s:%d-%d" rel-file line-start line-end)
+                   (format "lines %d-%d" line-start line-end)))
+         (lines (save-excursion
+                  (goto-char start)
+                  (beginning-of-line)
+                  (let ((result '())
+                        (current line-start))
+                    (while (<= current line-end)
+                      (push (format "%d: %s" current
+                                    (buffer-substring-no-properties
+                                     (line-beginning-position)
+                                     (line-end-position)))
+                            result)
+                      (forward-line 1)
+                      (setq current (1+ current)))
+                    (nreverse result))))
+         (text (concat header "\n\n" (string-join lines "\n"))))
+    (kill-new text)
+    (message "Copied: %s" header)))
+
+(global-set-key (kbd "C-c C-y") 'claude-code-copy-region)
+
 ;; --- all-the-icons
 (use-package all-the-icons
   :config
