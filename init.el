@@ -497,7 +497,16 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
 
 ;; --- markdown-mode
-;; (use-package markdown-mode)
+(use-package markdown-mode
+  :hook (markdown-mode . valign-mode)
+  :config
+  (add-hook 'markdown-mode-hook
+            (lambda ()
+              ;; Prevent M-q from merging separate list items
+              (setq-local paragraph-start
+                          (concat paragraph-start "\\|\\s-*[-+*]\\s-")))))
+
+(use-package valign)
 
 ;; --- multiple-cursors
 (use-package multiple-cursors
