@@ -857,6 +857,12 @@ The app is chosen from your OS's preference."
   (interactive "sTerminal purpose: ")
   (vterm (concat "vterm-" term-name)))
 
+(defun named-ghostel (term-name)
+  (interactive "sTerminal purpose: ")
+  (let ((ghostel-buffer-name (concat "*ghostel-" term-name "*")))
+    (ghostel)))
+
+
 ;; --- which-key
 (use-package which-key
   :config
