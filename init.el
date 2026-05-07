@@ -111,7 +111,8 @@
   (setq agent-shell-header-style 'text
         agent-shell-session-strategy 'prompt
         agent-shell-show-welcome-message nil
-        agent-shell-context-sources '(files region error))
+        agent-shell-context-sources '(files region error)
+        agent-shell-preferred-agent-config 'claude-code)
   (add-hook 'window-selection-change-functions
             (lambda (_frame)
               (when (derived-mode-p 'agent-shell-mode)
