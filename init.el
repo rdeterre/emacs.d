@@ -563,6 +563,15 @@ This command does not push text to `kill-ring'."
 
 (use-package valign)
 
+(defun md-to-org (start end)
+  "Convert the markdown region between START and END to org-mode in place."
+  (interactive "r")
+  (let ((result (shell-command-to-string
+                 (format "echo %s | pandoc -f markdown -t org"
+                         (shell-quote-argument (buffer-substring-no-properties start end))))))
+    (delete-region start end)
+    (insert result)))
+
 ;; --- multiple-cursors
 (use-package multiple-cursors
   :bind
