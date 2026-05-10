@@ -353,6 +353,54 @@ numbered code content, matching what agent-shell sends to a shell."
          ("C-M-." . eglot-find-typeDefinition)
          ("C-c r" . eglot-rename)))
 
+(defun romain/eglot-workspace-symbols ()
+  "Incrementally search workspace symbols via Eglot using ivy."
+  (interactive)
+  (unless (eglot-current-server)
+    (user-error "No Eglot server running"))
+  (let ((sym-kinds ["File" "Module" "Namespace" "Package" "Class" "Method"
+                    "Property" "Field" "Constructor" "Enum" "Interface"
+                    "Function" "Variable" "Constant" "String" "Number"
+                    "Boolean" "Array" "Object" "Key" "Null" "EnumMember"
+                    "Struct" "Event" "Operator" "TypeParameter"])
+        (server (eglot-current-server)))
+    (ivy-read "Workspace symbol: "
+              (lambda (input)
+                (jsonrpc-async-request
+                 server :workspace/symbol `(:query ,input)
+                 :success-fn
+                 (lambda (result)
+                   (ivy-update-candidates
+                    (mapcar
+                     (lambda (sym)
+                       (let* ((name (plist-get sym :name))
+                              (kind (plist-get sym :kind))
+                              (container (plist-get sym :containerName))
+                              (kind-str (if (and kind (> kind 0) (<= kind (length sym-kinds)))
+                                            (aref sym-kinds (1- kind)) "?"))
+                              (display (if (and container (not (string-empty-p container)))
+                                           (format "%-40s %-15s %s" name kind-str container)
+                                         (format "%-40s %s" name kind-str))))
+                         (propertize display 'eglot-location (plist-get sym :location))))
+                     (if (vectorp result) (append result nil) result))))
+                 :timeout-fn #'ignore)
+                '("" "searching..."))
+              :dynamic-collection t
+              :action (lambda (candidate)
+                        (when-let* ((loc (get-text-property 0 'eglot-location candidate))
+                                    (uri (plist-get loc :uri))
+                                    (start (plist-get (plist-get loc :range) :start))
+                                    (file (eglot--uri-to-path uri)))
+                          (find-file file)
+                          (goto-char (point-min))
+                          (forward-line (plist-get start :line))
+                          (forward-char (plist-get start :character)))))))
+
+(global-set-key (kbd "C-c C-s") #'romain/eglot-workspace-symbols)
+(with-eval-after-load 'cc-mode
+  (define-key c++-mode-map (kbd "C-c C-s") nil)
+  (define-key c-mode-map (kbd "C-c C-s") nil))
+
 ;; --- git-link
 (use-package git-link
   :bind (("C-c f l" . git-link)
