@@ -53,6 +53,7 @@
       mac-command-modifier 'meta
       mac-option-modifier 'super)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
+      auto-revert-verbose nil
       column-number-mode t
       custom-file "~/.emacs.d/custom.el"
       gc-cons-threshold 80000000
@@ -60,6 +61,7 @@
       initial-major-mode 'org-mode
       vc-follow-symlinks t  ; suppress "follow symlink into git repo?" prompt on M-.
       visible-bell t)
+(global-auto-revert-mode 1)
 (setq-default fill-column 120
               indent-tabs-mode nil
               tab-width 2)
