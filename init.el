@@ -64,7 +64,8 @@
 (global-auto-revert-mode 1)
 (setq-default fill-column 120
               indent-tabs-mode nil
-              tab-width 2)
+              tab-width 2
+              eglot-inlay-hints-mode nil)
 (global-unset-key (kbd "M-<return>"))
 
 (defun ansi-colorize ()
