@@ -246,6 +246,9 @@ numbered code content, matching what agent-shell sends to a shell."
 ;; --- dead-keys
 (setq ns-right-alternate-modifier 'none)
 
+
+(setq use-nano nil)
+
 ;; --- devdocs
 (use-package devdocs
   :bind (("C-c d d" . devdocs-lookup))
@@ -269,7 +272,8 @@ numbered code content, matching what agent-shell sends to a shell."
                                                                     (propertize branch 'face 'italic)))
                                                  ")" )
                                          position))))
-  (add-hook 'devdocs-mode-hook #'devdocs-nano-modeline))
+  (if use-nano
+    (add-hook 'devdocs-mode-hook #'devdocs-nano-modeline)))
 
 ;; --- disaster
 (use-package disaster)
@@ -948,7 +952,6 @@ The app is chosen from your OS's preference."
 ;; (load-theme 'leuven)
 
 ;; --- nano
-(setq use-nano nil)
 (if use-nano
     (elpaca (nano :host github
   			          :repo "rougier/nano-emacs")
@@ -1026,6 +1029,7 @@ The app is chosen from your OS's preference."
 (unless use-nano
   (progn
     (load-theme 'leuven)
+    (scroll-bar-mode -1)
     (tool-bar-mode -1)))
 
 
