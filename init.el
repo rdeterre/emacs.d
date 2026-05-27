@@ -48,10 +48,18 @@
 ;; --- Standard Emacs prelude
 ;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
-(setq mac-option-key-is-meta nil
-      mac-command-key-is-meta t
-      mac-command-modifier 'meta
-      mac-option-modifier 'super)
+(if (string-equal system-type "darwin")
+    (progn
+      (setq mac-option-key-is-meta nil
+            mac-command-key-is-meta t
+            mac-command-modifier 'meta
+            mac-option-modifier 'super
+            frame-resize-pixelwise t
+            ns-use-native-fullscreen nil
+            ns-function-modifier 'hyper)
+      (global-set-key (kbd "H-C-f") #'toggle-frame-maximized)))
+
+
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups"))
       auto-revert-verbose nil
       column-number-mode t
