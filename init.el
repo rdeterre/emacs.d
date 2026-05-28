@@ -361,6 +361,18 @@ numbered code content, matching what agent-shell sends to a shell."
 
   (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
 
+  (defun romain/maybe-start-eglot ()
+    "Start eglot if not already running and a server is known for this mode."
+    (when (and (not (eglot-current-server))
+               (assoc major-mode eglot-server-programs))
+      (eglot-ensure)))
+
+  (dolist (cmd '(xref-find-definitions
+                 xref-find-definitions-other-window
+                 xref-find-references
+                 xref-find-apropos))
+    (advice-add cmd :before #'romain/maybe-start-eglot))
+
   :bind (("C-c a" . eglot-code-actions)
          ("C-c f f" . eglot-format-buffer)
          ("C-M-." . eglot-find-typeDefinition)
