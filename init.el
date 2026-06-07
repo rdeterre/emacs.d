@@ -906,6 +906,7 @@ The app is chosen from your OS's preference."
       (unless (treesit-language-available-p (car grammar))
         (treesit-install-language-grammar (car grammar)))))
 (add-to-list 'auto-mode-alist '("\\.ts$" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx$" . tsx-ts-mode))
 
 ;; --- treesit-fold
 (use-package treesit-fold
