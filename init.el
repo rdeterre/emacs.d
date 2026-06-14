@@ -68,7 +68,8 @@
       highlight-nonselected-windows t
       initial-major-mode 'org-mode
       vc-follow-symlinks t  ; suppress "follow symlink into git repo?" prompt on M-.
-      visible-bell t)
+      visible-bell t
+      native-comp-async-report-warnings-errors 'silent) ; suppress warnings about "not-known to be defined" symbols
 (global-auto-revert-mode 1)
 (setq-default fill-column 120
               indent-tabs-mode nil
@@ -127,10 +128,10 @@
    ("<tab>" . agent-shell-ui-toggle-fragment-at-point))
   :config
   (setq agent-shell-header-style 'text
-        agent-shell-session-strategy 'new-deferred
         agent-shell-show-welcome-message nil
         agent-shell-context-sources '(files region error)
-        agent-shell-preferred-agent-config 'claude-code)
+        agent-shell-preferred-agent-config 'claude-code
+        agent-shell-prefer-viewport-interaction t)
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
 ;; If other agent-shell windows exist, split below the bottommost one.
@@ -857,8 +858,8 @@ The app is chosen from your OS's preference."
 ;; --- ghostel
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
-  :bind (:map ghostel-copy-mode-map
-         ("RET" . ghostel-copy-mode-exit)))
+  :config
+  (add-to-list 'ghostel-keymap-exceptions "M-o"))
 
 ;; --- pdf-tools
 (use-package pdf-tools)
