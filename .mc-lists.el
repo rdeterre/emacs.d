@@ -8,6 +8,7 @@
         beginning-of-line-text
         c-electric-colon
         c-electric-delete-forward
+        c-electric-lt-gt
         c-electric-paren
         c-electric-semi&comma
         c-electric-slash
@@ -33,6 +34,7 @@
         org-cycle-agenda-files
         org-delete-char
         org-end-of-line
+        org-fill-paragraph
         org-force-self-insert
         org-metaright
         org-return-and-maybe-indent

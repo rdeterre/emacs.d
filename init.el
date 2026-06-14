@@ -111,19 +111,52 @@
   (setq aw-display-always nil)
   (add-hook 'window-configuration-change-hook 'aw-update))
 
+(use-package shell-maker
+  ;; :ensure (:host github :repo "rdeterre/shell-maker" :ref "scheduled-message")
+  :ensure (:host github :repo "xenodium/shell-maker" :ref "main")
+  )
+
 ;; --- agent-shell
 (use-package agent-shell
-  :ensure t
+  ;; :ensure (:host github :repo "rdeterre/agent-shell" :ref "scheduled-message")
+  :ensure (:host github :repo "xenodium/agent-shell" :ref "main")
+  :after (shell-maker)
   :bind
   (("C-c c" . agent-shell)
    :map agent-shell-mode-map
    ("<tab>" . agent-shell-ui-toggle-fragment-at-point))
   :config
   (setq agent-shell-header-style 'text
-        agent-shell-session-strategy 'prompt
+        agent-shell-session-strategy 'new-deferred
         agent-shell-show-welcome-message nil
         agent-shell-context-sources '(files region error)
         agent-shell-preferred-agent-config 'claude-code)
+  ;; (defun my/agent-shell-display-buffer (buffer _alist)
+;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
+;; If other agent-shell windows exist, split below the bottommost one.
+;; Otherwise, replace the rightmost window with the agent-shell buffer."
+;;     (let* ((shell-wins (seq-filter
+;;                         (lambda (w)
+;;                           (and (not (eq (window-buffer w) buffer))
+;;                                (with-current-buffer (window-buffer w)
+;;                                  (derived-mode-p 'agent-shell-mode))))
+;;                         (window-list)))
+;;            (bottom-win (when shell-wins
+;;                          (car (seq-sort-by #'window-top-line #'> shell-wins)))))
+;;       (if bottom-win
+;;           (let ((new-win (split-window bottom-win nil 'below)))
+;;             (set-window-buffer new-win buffer)
+;;             new-win)
+;;         (let* ((root (frame-root-window))
+;;                (right-win (or (window-in-direction 'right root t)
+;;                               (let ((wins (window-list nil nil root)))
+;;                                 (car (seq-sort-by #'window-left-column #'> wins)))))
+;;                (target (if (and right-win (not (eq right-win root)))
+;;                            right-win
+;;                          (split-window root nil 'right))))
+;;           (set-window-buffer target buffer)
+;;           target))))
+;;   (setq agent-shell-display-action '(my/agent-shell-display-buffer))
   (add-hook 'window-selection-change-functions
             (lambda (_frame)
               (when (derived-mode-p 'agent-shell-mode)
@@ -166,7 +199,7 @@ numbered code content, matching what agent-shell sends to a shell."
                       (forward-line 1)
                       (setq current (1+ current)))
                     (nreverse result))))
-         (text (concat header "\n\n" (string-join lines "\n"))))
+         (text (concat header "\n" (string-join lines "\n"))))
     (kill-new text)
     (message "Copied: %s" header)))
 
@@ -305,6 +338,9 @@ numbered code content, matching what agent-shell sends to a shell."
         dired-omit-mode t)
   (put 'dired-find-alternate-file 'disabled nil))
 (use-package dired-collapse
+  :after dired-x
+  :config
+  (require 'dired-x)
   :ensure t)
 (use-package dired-subtree
   :ensure t
@@ -340,10 +376,7 @@ numbered code content, matching what agent-shell sends to a shell."
   (global-eldoc-mode)) ;; This is usually enabled by default by Emacs
 (use-package jsonrpc :ensure (:wait t) :defer t)
 (use-package eglot
-  :init
-  :defer t
-  :ensure (:wait t
-           :ref "b8ff1c1") ; Subsequent versions use project 0.11.2
+  :ensure nil
   :config
   ;; (advice-add 'jsonrpc--log-event :override #'ignore)
   ;; (setq eglot-events-buffer-size 0)
@@ -361,17 +394,17 @@ numbered code content, matching what agent-shell sends to a shell."
 
   (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
 
-  (defun romain/maybe-start-eglot ()
-    "Start eglot if not already running and a server is known for this mode."
-    (when (and (not (eglot-current-server))
-               (assoc major-mode eglot-server-programs))
-      (eglot-ensure)))
+  ;; (defun romain/maybe-start-eglot ()
+  ;;   "Start eglot if not already running and a server is known for this mode."
+  ;;   (when (and (not (eglot-current-server))
+  ;;              (assoc major-mode eglot-server-programs))
+  ;;     (eglot-ensure)))
 
-  (dolist (cmd '(xref-find-definitions
-                 xref-find-definitions-other-window
-                 xref-find-references
-                 xref-find-apropos))
-    (advice-add cmd :before #'romain/maybe-start-eglot))
+  ;; (dolist (cmd '(xref-find-definitions
+  ;;                xref-find-definitions-other-window
+  ;;                xref-find-references
+  ;;                xref-find-apropos))
+  ;;   (advice-add cmd :before #'romain/maybe-start-eglot))
 
   :bind (("C-c a" . eglot-code-actions)
          ("C-c f f" . eglot-format-buffer)
