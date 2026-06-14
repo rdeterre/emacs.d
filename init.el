@@ -69,6 +69,7 @@
       initial-major-mode 'org-mode
       vc-follow-symlinks t  ; suppress "follow symlink into git repo?" prompt on M-.
       visible-bell t
+      comint-scroll-to-bottom-on-output t
       native-comp-async-report-warnings-errors 'silent) ; suppress warnings about "not-known to be defined" symbols
 (global-auto-revert-mode 1)
 (setq-default fill-column 120
@@ -859,7 +860,13 @@ The app is chosen from your OS's preference."
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
   :config
-  (add-to-list 'ghostel-keymap-exceptions "M-o"))
+  (add-to-list 'ghostel-keymap-exceptions "M-o")
+  (add-to-list 'ghostel-keymap-exceptions "M-1")
+  (add-to-list 'ghostel-keymap-exceptions "M-2")
+  (add-to-list 'ghostel-keymap-exceptions "M-3")
+  (add-to-list 'ghostel-keymap-exceptions "M-4")
+  (add-to-list 'ghostel-keymap-exceptions "M-5")
+  (add-to-list 'ghostel-keymap-exceptions "M-6"))
 
 ;; --- pdf-tools
 (use-package pdf-tools)
