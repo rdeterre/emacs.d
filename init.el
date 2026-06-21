@@ -860,13 +860,9 @@ The app is chosen from your OS's preference."
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
   :config
-  (add-to-list 'ghostel-keymap-exceptions "M-o")
-  (add-to-list 'ghostel-keymap-exceptions "M-1")
-  (add-to-list 'ghostel-keymap-exceptions "M-2")
-  (add-to-list 'ghostel-keymap-exceptions "M-3")
-  (add-to-list 'ghostel-keymap-exceptions "M-4")
-  (add-to-list 'ghostel-keymap-exceptions "M-5")
-  (add-to-list 'ghostel-keymap-exceptions "M-6"))
+  (setopt ghostel-keymap-exceptions
+        (append ghostel-keymap-exceptions
+                '("M-o" "M-1" "M-2" "M-3" "M-4" "M-5" "M-6"))))
 
 ;; --- pdf-tools
 (use-package pdf-tools)
