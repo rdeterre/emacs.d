@@ -290,7 +290,7 @@ numbered code content, matching what agent-shell sends to a shell."
 (setq ns-right-alternate-modifier 'none)
 
 
-(setq use-nano nil)
+(setq use-nano t)
 
 ;; --- devdocs
 (use-package devdocs
