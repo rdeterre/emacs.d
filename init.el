@@ -130,9 +130,7 @@
   :config
   (setq agent-shell-header-style 'text
         agent-shell-show-welcome-message nil
-        agent-shell-context-sources '(files region error)
-        agent-shell-preferred-agent-config 'claude-code
-        agent-shell-prefer-viewport-interaction t)
+        agent-shell-context-sources '(files region error))
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
 ;; If other agent-shell windows exist, split below the bottommost one.
