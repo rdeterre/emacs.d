@@ -210,6 +210,72 @@ numbered code content, matching what agent-shell sends to a shell."
   :config
   (require 'all-the-icons))
 
+;; --- vertico
+(use-package vertico
+  :init
+  (vertico-mode))
+
+;; --- orderless
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+;; --- marginalia
+(use-package marginalia
+  :init
+  (marginalia-mode))
+
+;; --- embark
+(use-package embark
+  :bind
+  (("C-." . embark-act)
+   ("C-;" . embark-dwim)
+   ("C-h B" . embark-bindings)
+   :map minibuffer-local-map
+   ("M-o" . embark-act)
+   :map embark-file-map
+   ("v" . magit-status))
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command))
+
+;; --- consult
+(use-package consult
+  :bind
+  (("C-x b"   . consult-buffer)
+   ("C-x 4 b" . consult-buffer-other-window)
+   ("M-y"     . consult-yank-pop)
+   ("M-g g"   . consult-goto-line)
+   ("M-g M-g" . consult-goto-line)
+   ("M-s l"   . consult-line)
+   ("M-s r"   . consult-ripgrep)
+   ("C-x C-r" . consult-recent-file)
+   :map isearch-mode-map
+   ("M-l"     . consult-line))
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :init
+  (recentf-mode 1))
+
+;; --- embark-consult
+(use-package embark-consult
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;; --- vertico-posframe (show minibuffer centered on screen)
+(use-package posframe)
+
+(use-package vertico-posframe
+  :after vertico
+  :bind (:map vertico-map
+         ("M-l" . vertico-posframe-toggle))
+  :config
+  (vertico-posframe-mode 1)
+  (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center
+        vertico-posframe-width 100
+        vertico-posframe-border-width 2)
+  (defun vertico-posframe-toggle ()
+    (interactive)
+    (vertico-posframe-mode (if vertico-posframe-mode -1 1))))
+
 ;; --- ansi-color
 (require 'ansi-color)
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
@@ -412,47 +478,40 @@ numbered code content, matching what agent-shell sends to a shell."
          ("C-c r" . eglot-rename)))
 
 (defun romain/eglot-workspace-symbols ()
-  "Incrementally search workspace symbols via Eglot using ivy."
+  "Search workspace symbols via Eglot using completing-read."
   (interactive)
   (unless (eglot-current-server)
     (user-error "No Eglot server running"))
-  (let ((sym-kinds ["File" "Module" "Namespace" "Package" "Class" "Method"
-                    "Property" "Field" "Constructor" "Enum" "Interface"
-                    "Function" "Variable" "Constant" "String" "Number"
-                    "Boolean" "Array" "Object" "Key" "Null" "EnumMember"
-                    "Struct" "Event" "Operator" "TypeParameter"])
-        (server (eglot-current-server)))
-    (ivy-read "Workspace symbol: "
-              (lambda (input)
-                (jsonrpc-async-request
-                 server :workspace/symbol `(:query ,input)
-                 :success-fn
-                 (lambda (result)
-                   (ivy-update-candidates
-                    (mapcar
-                     (lambda (sym)
-                       (let* ((name (plist-get sym :name))
-                              (kind (plist-get sym :kind))
-                              (container (plist-get sym :containerName))
-                              (kind-str (if (and kind (> kind 0) (<= kind (length sym-kinds)))
-                                            (aref sym-kinds (1- kind)) "?"))
-                              (display (if (and container (not (string-empty-p container)))
-                                           (format "%-40s %-15s %s" name kind-str container)
-                                         (format "%-40s %s" name kind-str))))
-                         (propertize display 'eglot-location (plist-get sym :location))))
-                     (if (vectorp result) (append result nil) result))))
-                 :timeout-fn #'ignore)
-                '("" "searching..."))
-              :dynamic-collection t
-              :action (lambda (candidate)
-                        (when-let* ((loc (get-text-property 0 'eglot-location candidate))
-                                    (uri (plist-get loc :uri))
-                                    (start (plist-get (plist-get loc :range) :start))
-                                    (file (eglot--uri-to-path uri)))
-                          (find-file file)
-                          (goto-char (point-min))
-                          (forward-line (plist-get start :line))
-                          (forward-char (plist-get start :character)))))))
+  (let* ((sym-kinds ["File" "Module" "Namespace" "Package" "Class" "Method"
+                     "Property" "Field" "Constructor" "Enum" "Interface"
+                     "Function" "Variable" "Constant" "String" "Number"
+                     "Boolean" "Array" "Object" "Key" "Null" "EnumMember"
+                     "Struct" "Event" "Operator" "TypeParameter"])
+         (server (eglot-current-server))
+         (query (read-string "Workspace symbol query: "))
+         (result (jsonrpc-request server :workspace/symbol `(:query ,query)))
+         (candidates
+          (mapcar
+           (lambda (sym)
+             (let* ((name (plist-get sym :name))
+                    (kind (plist-get sym :kind))
+                    (container (plist-get sym :containerName))
+                    (kind-str (if (and kind (> kind 0) (<= kind (length sym-kinds)))
+                                  (aref sym-kinds (1- kind)) "?"))
+                    (display (if (and container (not (string-empty-p container)))
+                                 (format "%-40s %-15s %s" name kind-str container)
+                               (format "%-40s %s" name kind-str))))
+               (propertize display 'eglot-location (plist-get sym :location))))
+           (if (vectorp result) (append result nil) result)))
+         (choice (completing-read "Symbol: " candidates nil t)))
+    (when-let* ((loc (get-text-property 0 'eglot-location choice))
+                (uri (plist-get loc :uri))
+                (start (plist-get (plist-get loc :range) :start))
+                (file (eglot--uri-to-path uri)))
+      (find-file file)
+      (goto-char (point-min))
+      (forward-line (plist-get start :line))
+      (forward-char (plist-get start :character)))))
 
 (global-set-key (kbd "C-c C-s") #'romain/eglot-workspace-symbols)
 (with-eval-after-load 'cc-mode
@@ -519,27 +578,7 @@ numbered code content, matching what agent-shell sends to a shell."
   (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
   (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up))
 
-;; --- ivy/swiper/counsel
-(use-package ivy
-  :init
-  (setq ivy-use-virtual-buffers t)
-  :config
-  (ivy-mode))
-(use-package swiper
-  :bind
-  (("C-c s" . counsel-rg)
-   ("C-s" . swiper)))
-(use-package counsel
-  :bind
-  ("C-c m" . counsel-imenu)
-  :config
-  (counsel-mode)
-  ;; (require 'nano-counsel)
-  :demand t)
-(use-package smex
-  :ensure (:wait t))
-
-(global-set-key (kbd "C-c u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c u") 'insert-char)
 
 ;; --- java
 (add-hook 'java-mode-hook
@@ -638,24 +677,6 @@ This command does not push text to `kill-ring'."
    ("C-<" . 'mc/mark-previous-like-this)
    ("C-c C-<" . 'mc/mark-all-like-this)))
 
-(defun adviced:counsel-M-x-action (orig-fun &rest r)
-  "Additional support for multiple cursors."
-  (apply orig-fun r)
-  (let ((cmd (intern (car r))))
-    (when (and (boundp 'multiple-cursors-mode)
-               multiple-cursors-mode
-               cmd
-               (not (memq cmd mc--default-cmds-to-run-once))
-               (not (memq cmd mc/cmds-to-run-once))
-               (or mc/always-run-for-all
-                   (memq cmd mc--default-cmds-to-run-for-all)
-                   (memq cmd mc/cmds-to-run-for-all)
-                   (mc/prompt-for-inclusion-in-whitelist cmd)))
-      (mc/execute-command-for-all-fake-cursors cmd))))
-
-(advice-add #'counsel-M-x-action
-            :around
-            #'adviced:counsel-M-x-action)
 
 ;; --- open externally
 (defun xah-open-in-external-app (&optional file)
@@ -888,8 +909,6 @@ The app is chosen from your OS's preference."
   (("C-c p" . projectile-command-map)
    ("s-p" . projectile-command-map)))
 
-(use-package counsel-projectile
-  :config (counsel-projectile-mode t))
 
 (global-set-key (kbd "C-'") 'projectile-run-vterm)
 (global-set-key (kbd "C-c '") 'projectile-run-vterm)
