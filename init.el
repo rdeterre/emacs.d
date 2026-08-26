@@ -268,6 +268,7 @@ numbered code content, matching what agent-shell sends to a shell."
 
 (use-package vertico-posframe
   :after vertico
+  :demand t
   :bind (:map vertico-map
          ("M-l" . vertico-posframe-toggle))
   :config
