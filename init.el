@@ -237,7 +237,10 @@ numbered code content, matching what agent-shell sends to a shell."
    :map embark-file-map
    ("v" . magit-status))
   :init
-  (setq prefix-help-command #'embark-prefix-help-command))
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ; Make magit-status apply to the vertico-selected file/project, not the current one
+  (add-to-list 'embark-around-action-hooks '(magit-status embark--cd)))
 
 ;; --- consult
 (use-package consult
