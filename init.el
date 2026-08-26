@@ -243,6 +243,20 @@ numbered code content, matching what agent-shell sends to a shell."
   (add-to-list 'embark-around-action-hooks '(magit-status embark--cd)))
 
 ;; --- consult
+(defun my/consult-ripgrep-project (&optional choose-directory)
+  "Incrementally search the current project with ripgrep.
+With a prefix argument, prompt for a directory to search instead."
+  (interactive "P")
+  (require 'project)
+  (require 'consult)
+  (let ((directory
+         (if choose-directory
+             (read-directory-name "Ripgrep directory: " default-directory nil t)
+           (if-let ((project (project-current nil)))
+               (project-root project)
+             (user-error "No project found for %s" default-directory)))))
+    (consult-ripgrep directory)))
+
 (use-package consult
   :bind
   (("C-x b"   . consult-buffer)
@@ -250,14 +264,19 @@ numbered code content, matching what agent-shell sends to a shell."
    ("M-y"     . consult-yank-pop)
    ("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
+   ("C-s"     . consult-line)
    ("M-s l"   . consult-line)
    ("M-s r"   . consult-ripgrep)
+   ("C-c s"   . my/consult-ripgrep-project)
    ("C-x C-r" . consult-recent-file)
    :map isearch-mode-map
    ("M-l"     . consult-line))
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :init
-  (recentf-mode 1))
+  (recentf-mode 1)
+  :config
+  ;; The word at point is the first future-history item (M-n), not the line.
+  (consult-customize consult-line :default nil))
 
 ;; --- embark-consult
 (use-package embark-consult
