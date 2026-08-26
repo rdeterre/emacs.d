@@ -311,10 +311,10 @@ With a prefix argument, prompt for a directory to search instead."
 ;; (use-package caser) ; broken with elpaca for some reason
 
 ;; --- casual
-; (use-package casual
-;   :bind
-;   (:map calc-mode-map
-;         ("C-o" . casual-main-menu)))
+(use-package casual
+  :after transient
+  :config
+  (casual-init))
 
 ;; --- clang-format
 (use-package clang-format)
