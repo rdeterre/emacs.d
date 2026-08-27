@@ -55,7 +55,6 @@
             mac-command-modifier 'meta
             mac-option-modifier 'super
             frame-resize-pixelwise t
-            ns-use-native-fullscreen nil
             ns-function-modifier 'hyper)
       (global-set-key (kbd "H-C-f") #'toggle-frame-maximized)))
 
