@@ -1036,6 +1036,28 @@ The app is chosen from your OS's preference."
   (require 'which-key)
   (which-key-mode))
 
+;; --- compact native mode line
+;; Keep buffer state, version control, position, major mode, and one menu for
+;; minor modes.  The layout deliberately uses only built-in mode-line segments.
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                mode-line-modified
+                " "
+                mode-line-buffer-identification
+                (vc-mode vc-mode)
+                mode-line-format-right-align
+                mode-line-position
+                "  "
+                mode-line-modes
+                mode-line-misc-info
+                mode-line-end-spaces))
+(setq mode-line-modes-delimiters nil)
+
+(use-package minions
+  :config
+  (minions-mode 1))
+
 ;; --- whitespace-mode
 (global-set-key (kbd "C-c w") #'whitespace-mode)
 
