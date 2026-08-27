@@ -126,11 +126,33 @@
   :bind
   (("C-c c" . agent-shell)
    :map agent-shell-mode-map
-   ("<tab>" . agent-shell-ui-toggle-fragment-at-point))
+   ("<tab>" . agent-shell-ui-toggle-fragment-at-point)
+   ("C-c C-r" . agent-shell-restart)
+   ("C-c C-a" . my/agent-shell-toggle-auto-approve-permissions))
   :config
   (setq agent-shell-header-style 'text
         agent-shell-show-welcome-message nil
         agent-shell-context-sources '(files region error))
+
+  ;; Auto-approve permission prompts by default in every new session.
+  ;; Toggling it off applies only to the current session buffer.
+  (defvar-local my/agent-shell-auto-approve-permissions t
+    "When non-nil, auto-approve permission prompts in this agent-shell session.")
+
+  (defun my/agent-shell-toggle-auto-approve-permissions ()
+    "Toggle auto-approving permission prompts for the current agent-shell session."
+    (interactive)
+    (setq my/agent-shell-auto-approve-permissions
+          (not my/agent-shell-auto-approve-permissions))
+    (message "agent-shell auto-approve permissions: %s"
+             (if my/agent-shell-auto-approve-permissions "on" "off")))
+
+  (defun my/agent-shell-permission-responder (permission)
+    "Auto-approve PERMISSION when the current session has auto-approve enabled."
+    (when my/agent-shell-auto-approve-permissions
+      (agent-shell-permission-allow-always permission)))
+
+  (setq agent-shell-permission-responder-function #'my/agent-shell-permission-responder)
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
 ;; If other agent-shell windows exist, split below the bottommost one.
