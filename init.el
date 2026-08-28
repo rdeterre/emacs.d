@@ -487,6 +487,13 @@ With a prefix argument, prompt for a directory to search instead."
 (use-package jsonrpc :ensure (:wait t) :defer t)
 (use-package eglot
   :ensure nil
+  :custom
+  (eglot-autoshutdown t)
+  :hook
+  ((rust-mode rust-ts-mode
+              typescript-mode typescript-ts-mode tsx-ts-mode
+              c-mode c-ts-mode c++-mode c++-ts-mode)
+   . eglot-ensure)
   :config
   ;; (advice-add 'jsonrpc--log-event :override #'ignore)
   ;; (setq eglot-events-buffer-size 0)
