@@ -398,7 +398,7 @@ With a prefix argument, prompt for a directory to search instead."
 (setq ns-right-alternate-modifier 'none)
 
 
-(setq use-nano nil)
+(setq use-nano t)
 
 ;; --- devdocs
 (use-package devdocs
