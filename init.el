@@ -699,17 +699,28 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "M-d") 'my-delete-word)
 (global-set-key (kbd "<M-backspace>") 'my-backward-delete-word)
 
-;; --- markdown-mode
-(use-package markdown-mode
-  :hook (markdown-mode . valign-mode)
+;; --- markdown-ts-mode
+(defun my-markdown-ts-variable-pitch ()
+  "Use variable-pitch prose and fixed-pitch code and tables."
+  (variable-pitch-mode 1)
+  (dolist (face '(markdown-ts-code-block
+                  markdown-ts-in-code-block
+                  markdown-ts-code-span
+                  markdown-ts-table))
+    (face-remap-add-relative face 'fixed-pitch)))
+
+(use-package markdown-ts-mode
+  :ensure nil
+  :mode ("\\.md\\'" "\\.mdx\\'" "\\.markdown\\'")
+  :hook (markdown-ts-mode . my-markdown-ts-variable-pitch)
+  :bind (:map markdown-ts-mode-map
+         ("C-c C-o" . push-button))
   :config
-  (add-hook 'markdown-mode-hook
-            (lambda ()
-              ;; Prevent M-q from merging separate list items
-              (setq-local paragraph-start
-                          (concat paragraph-start "\\|\\s-*[-+*]\\s-")))))
+  (require 'markdown-ts-mode-x))
 
 (use-package valign)
+
+(use-package mixed-pitch)
 
 (defun md-to-org (start end)
   "Convert the markdown region between START and END to org-mode in place."
@@ -1091,7 +1102,7 @@ The app is chosen from your OS's preference."
       (add-to-list 'command-switch-alist '("-no-splash" . (lambda (args))))
       (add-to-list 'command-switch-alist '("-no-help" . (lambda (args))))
       (add-to-list 'command-switch-alist '("-compact" . (lambda (args))))
-      (setq nano-font-family-proportional "San Francisco")
+      (setq nano-font-family-proportional ".AppleSystemUIFont")
 
       ;; Theme
       (require 'nano-faces)
