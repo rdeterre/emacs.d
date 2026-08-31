@@ -948,6 +948,25 @@ The app is chosen from your OS's preference."
 ;; --- pdf-tools
 (use-package pdf-tools)
 
+;; --- popper
+(use-package popper
+  :bind (("C-`"   . popper-toggle)
+         ("M-`"   . popper-cycle)
+         ("C-M-`" . popper-toggle-type))
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "\\*Async Shell Command\\*"
+          "\\*Warnings\\*"
+          "\\*Compile-Log\\*"
+          help-mode
+          helpful-mode
+          compilation-mode
+          grep-mode
+          vterm-mode))
+  (popper-mode +1)
+  (popper-echo-mode +1))
+
 ;; --- prettier-js
 (use-package prettier-js)
 
