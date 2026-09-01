@@ -704,6 +704,7 @@ This command does not push text to `kill-ring'."
   "Use variable-pitch prose and fixed-pitch code and tables."
   (variable-pitch-mode 1)
   (dolist (face '(markdown-ts-code-block
+                  markdown-ts-code-block-markup-hidden
                   markdown-ts-in-code-block
                   markdown-ts-code-span
                   markdown-ts-table))
