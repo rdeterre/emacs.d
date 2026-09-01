@@ -963,7 +963,8 @@ The app is chosen from your OS's preference."
           helpful-mode
           compilation-mode
           grep-mode
-          vterm-mode))
+          vterm-mode
+          devdocs-mode))
   (popper-mode +1)
   (popper-echo-mode +1))
 
