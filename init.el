@@ -398,7 +398,7 @@ With a prefix argument, prompt for a directory to search instead."
 (setq ns-right-alternate-modifier 'none)
 
 
-(setq use-nano t)
+(setq use-nano nil)
 
 ;; --- devdocs
 (use-package devdocs
@@ -1181,7 +1181,9 @@ The app is chosen from your OS's preference."
       (tool-bar-mode -1)))
 (unless use-nano
   (progn
-    (load-theme 'leuven)
+    (use-package doom-themes
+      :config
+      (load-theme 'doom-nord-light t))
     (scroll-bar-mode -1)
     (tool-bar-mode -1)))
 
