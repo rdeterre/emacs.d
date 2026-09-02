@@ -752,10 +752,6 @@ This command does not push text to `kill-ring'."
   :config
   (require 'markdown-ts-mode-x))
 
-(use-package valign)
-
-(use-package mixed-pitch)
-
 (defun md-to-org (start end)
   "Convert the markdown region between START and END to org-mode in place."
   (interactive "r")
@@ -1032,11 +1028,6 @@ The app is chosen from your OS's preference."
 
 ;; --- python
 (use-package python-black)
-
-;; --- realgud
-;; (use-package realgud
-;;   :ensure (:wait t))
-;; (use-package realgud-lldb)
 
 ;; --- ruff
 (use-package flymake-ruff
