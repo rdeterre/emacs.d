@@ -334,6 +334,34 @@ With a prefix argument, prompt for a directory to search instead."
 ;; --- casual
 (use-package casual
   :after transient
+  :init
+  (setq casual-init-hook
+        '(casual-agenda-init
+         casual-bibtex-init
+         casual-bookmarks-init
+         casual-calc-init
+         casual-calendar-init
+         casual-compile-init
+         casual-grep-init
+         casual-css-init
+         casual-csv-init
+         casual-dired-init
+         casual-ediff-init
+         casual-editkit-init
+         casual-elisp-init
+         casual-eshell-init
+         casual-eww-init
+         casual-help-init
+         casual-html-init
+         casual-ibuffer-init
+         casual-image-init
+         casual-info-init
+         casual-isearch-init
+         ;casual-ispell-init
+         casual-make-init
+         casual-man-init
+         casual-org-init
+         casual-re-builder-init))
   :config
   (casual-init))
 
