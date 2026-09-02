@@ -982,7 +982,7 @@ The app is chosen from your OS's preference."
 (use-package popper
   :bind (("C-`"   . popper-toggle)
          ("M-`"   . popper-cycle)
-         ("C-M-`" . popper-toggle-type))
+         ("C-c v" . popper-toggle-type))
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
