@@ -631,6 +631,11 @@ With a prefix argument, prompt for a directory to search instead."
 
 (global-set-key (kbd "C-c u") 'insert-char)
 
+;; --- info
+(use-package info-mode
+  :ensure nil
+  :hook (info-mode . variable-pitch-mode))
+
 ;; --- java
 (add-hook 'java-mode-hook
           (lambda ()
