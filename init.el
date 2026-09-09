@@ -990,7 +990,7 @@ This command does not push text to `kill-ring'."
 (use-package popper
   :bind (("C-`"   . popper-toggle)
          ("M-`"   . popper-cycle)
-         ("C-c v" . popper-toggle-type))
+         ("C-M-`" . popper-toggle-type))
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
