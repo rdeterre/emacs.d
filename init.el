@@ -70,6 +70,7 @@
       visible-bell t
       comint-scroll-to-bottom-on-output t
       native-comp-async-report-warnings-errors 'silent) ; suppress warnings about "not-known to be defined" symbols
+(load custom-file 'noerror)
 (global-auto-revert-mode 1)
 (setq-default fill-column 120
               indent-tabs-mode nil
@@ -437,7 +438,7 @@ With a prefix argument, prompt for a directory to search instead."
   (add-hook 'cmake-mode-hook
             (lambda () (setq-local devdocs-current-docs '("cmake~3.26"))))
   (add-hook 'python-mode-hook
-            (lambda () (setq-loadl devdocs-current-docs '("python~3.10"))))
+            (lambda () (setq-local devdocs-current-docs '("python~3.12"))))
   (defun devdocs-nano-modeline ()
     (setq-local header-line-format
                 (let ((buffer-name (format-mode-line "%b"))
@@ -472,14 +473,19 @@ With a prefix argument, prompt for a directory to search instead."
         dired-listing-switches "-Alh"
         dired-dwim-target t
         dired-auto-revert-buffer t
-        dired-omit-files "^\\..*$\\|^\\.||.$"
-        dired-omit-mode t)
+        dired-omit-files "^\\..*$\\|^\\.||.$")
   (put 'dired-find-alternate-file 'disabled nil))
+
+(use-package dired-x
+  :ensure nil
+  :after dired
+  :hook (dired-mode . dired-omit-mode))
+
 (use-package dired-collapse
-  :after dired-x
-  :config
-  (require 'dired-x)
-  :ensure t)
+  :after dired
+  :ensure t
+  :hook (dired-mode . dired-collapse-mode))
+
 (use-package dired-subtree
   :ensure t
   :bind (:map dired-mode-map
@@ -503,6 +509,36 @@ With a prefix argument, prompt for a directory to search instead."
 (use-package editorconfig
   :config
   (editorconfig-mode 1))
+
+;; --- formatting
+(use-package apheleia
+  :demand t
+  :config
+  ;; Apheleia deliberately has no Markdown default.  Use Prettier here, while
+  ;; retaining its built-in Black and Prettier defaults for Python and JS/TS.
+  (dolist (mode '(markdown-mode markdown-ts-mode gfm-mode))
+    (setf (alist-get mode apheleia-mode-alist) 'prettier-markdown)))
+
+(defun romain/format-buffer (&optional choose-formatter)
+  "Format the current buffer using the most appropriate formatter.
+
+An explicit `apheleia-formatter' project or directory-local setting takes
+priority.  Otherwise use Eglot when the current server supports formatting,
+then fall back to Apheleia's mode-specific formatter.  With a prefix argument,
+always prompt for an Apheleia formatter."
+  (interactive "P")
+  (cond
+   (choose-formatter
+    (let ((current-prefix-arg choose-formatter))
+      (call-interactively #'apheleia-format-buffer)))
+   ((bound-and-true-p apheleia-formatter)
+    (call-interactively #'apheleia-format-buffer))
+   ((and (fboundp 'eglot-managed-p)
+         (eglot-managed-p)
+         (eglot-server-capable :documentFormattingProvider))
+    (eglot-format-buffer))
+   (t
+    (call-interactively #'apheleia-format-buffer))))
 
 ;; --- eglot
 (unload-feature 'eldoc t)
@@ -552,7 +588,7 @@ With a prefix argument, prompt for a directory to search instead."
   ;;   (advice-add cmd :before #'romain/maybe-start-eglot))
 
   :bind (("C-c a" . eglot-code-actions)
-         ("C-c f f" . eglot-format-buffer)
+         ("C-c f f" . romain/format-buffer)
          ("C-M-." . eglot-find-typeDefinition)
          ("C-c r" . eglot-rename)))
 
@@ -610,17 +646,9 @@ With a prefix argument, prompt for a directory to search instead."
 ;; --- gptel
 (use-package gptel
   :config
-  (setq gptel-default-mode 'org-mode
-        gptel-mode 'mistral-small
-        gptel-backend (gptel-make-openai "MistralLeChat"
-                        :host "api.mistral.ai"
-                        :endpoint "/v1/chat/completions"
-                        :protocol "https"
-                        :key "0NKvFWiOkUhpVvelYTRcsfhYQrUCduDd"
-                        :models '("mistral-small")))
+  (setq gptel-default-mode 'org-mode)
   :bind (("C-c RET" . gptel-send)
-         ("C-c g" . gptel)
-         ("C-c h" . gptel-send)))
+         ("C-c g" . gptel)))
 
 ;; --- grip - Github Readme Instant Preview
 (use-package grip-mode
@@ -671,7 +699,7 @@ With a prefix argument, prompt for a directory to search instead."
             (display-fill-column-indicator-mode t)))
 
 ;; --- javascript
-(add-hook 'typescript-mode
+(add-hook 'typescript-mode-hook
           (lambda ()
             (setq comment-line-break-function 'c-indent-new-comment-line)))
 
@@ -769,33 +797,6 @@ This command does not push text to `kill-ring'."
    ("C-<" . 'mc/mark-previous-like-this)
    ("C-c C-<" . 'mc/mark-all-like-this)))
 
-
-;; --- open externally
-(defun xah-open-in-external-app (&optional file)
-  "Open the current file or dired marked files in external app.
-
-The app is chosen from your OS's preference."
-  (interactive)
-  (let ( doIt
-         (myFileList
-          (cond
-           ((string-equal major-mode "dired-mode") (dired-get-marked-files))
-           ((not file) (list (buffer-file-name)))
-           (file (list file)))))
-
-    (setq doIt (if (<= (length myFileList) 5)
-                   t
-                 (y-or-n-p "Open more than 5 files? ") ) )
-
-    (when doIt
-      (cond
-       ((string-equal system-type "windows-nt")
-        (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList))
-       ((string-equal system-type "darwin")
-        (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
-       ((string-equal system-type "gnu/linux")
-        (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) )))
-
 ; see http://blog.binchen.org/posts/open-url-in-emacs-with-external-browser/
 (setq browse-url-generic-program
       (cond
@@ -840,18 +841,18 @@ The app is chosen from your OS's preference."
 ;;   (string-match org-bracket-link-regexp text)
 ;;   (substring text (match-beginning 1) (match-end 1)))
 
-;; (defun my-org-retrieve-url-from-point ()
-;;   (interactive)
-;;   (let* ((link-info (assoc :link (org-context)))
-;;          (text (when link-info
-;;                  ;; org-context seems to return nil if the current element
-;;                  ;; starts at buffer-start or ends at buffer-end
-;;                  (buffer-substring-no-properties (or (cadr link-info) (point-min))
-;;                                                  (or (caddr link-info) (point-max)))))
-;; 	 (url (org-extract-link-url text)))
-;;     (if (not url)
-;;         (error "Not in org link")
-;;       (kill-new url))))
+(defun my-org-retrieve-url-from-point ()
+  (interactive)
+  (let* ((link-info (assoc :link (org-context)))
+         (text (when link-info
+                 ;; org-context seems to return nil if the current element
+                 ;; starts at buffer-start or ends at buffer-end
+                 (buffer-substring-no-properties (or (cadr link-info) (point-min))
+                                                 (or (caddr link-info) (point-max)))))
+	 (url (org-extract-link-url text)))
+    (if (not url)
+        (error "Not in org link")
+      (kill-new url))))
 
 ;; ;(require 'org-drawio)
 
@@ -978,6 +979,13 @@ The app is chosen from your OS's preference."
 ;; --- pdf-tools
 (use-package pdf-tools)
 
+;; --- helpful
+(use-package helpful
+  :bind (([remap describe-command] . helpful-command)
+         ([remap describe-function] . helpful-callable)
+         ([remap describe-key] . helpful-key)
+         ([remap describe-variable] . helpful-variable)))
+
 ;; --- popper
 (use-package popper
   :bind (("C-`"   . popper-toggle)
@@ -997,9 +1005,6 @@ The app is chosen from your OS's preference."
           devdocs-mode))
   (popper-mode +1)
   (popper-echo-mode +1))
-
-;; --- prettier-js
-(use-package prettier-js)
 
 ;; --- project.el - projectile
 (use-package projectile
@@ -1025,9 +1030,6 @@ The app is chosen from your OS's preference."
 (global-set-key (kbd "C-'") 'projectile-run-vterm)
 (global-set-key (kbd "C-c '") 'projectile-run-vterm)
 (global-set-key (kbd "C-c C-k") 'kill-compilation)
-
-;; --- python
-(use-package python-black)
 
 ;; --- ruff
 (use-package flymake-ruff
@@ -1123,7 +1125,6 @@ The app is chosen from your OS's preference."
 ;; --- winner-mode
 (winner-mode)
 (global-set-key (kbd "C-c ;") #'winner-undo)
-(global-set-key (kbd "C-c '") #'winner-redo)
 
 ;; --- yaml-mode
 (use-package yaml-mode)
