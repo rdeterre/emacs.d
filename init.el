@@ -1208,9 +1208,17 @@ This command does not push text to `kill-ring'."
       (tool-bar-mode -1)))
 (unless use-nano
   (progn
+    (use-package modus-themes
+      :defer t)
+    (use-package spacemacs-theme
+      :defer t)
     (use-package doom-themes
       :config
       (load-theme 'doom-nord-light t))
+    (use-package catppuccin-theme
+      :defer t
+      :init
+      (setq catppuccin-flavor 'latte))
     (scroll-bar-mode -1)
     (tool-bar-mode -1)))
 
