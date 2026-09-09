@@ -1214,7 +1214,7 @@ This command does not push text to `kill-ring'."
       :defer t)
     (use-package doom-themes
       :config
-      (load-theme 'doom-nord-light t))
+      (load-theme 'doom-one-light t))
     (use-package catppuccin-theme
       :defer t
       :init
