@@ -1,4 +1,11 @@
-;; --- elpaca prelude  -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
+
+;; --- native compilation
+;; ignore "function is not known to be defined..."
+(setq native-comp-async-report-warnings-errors 'silent
+      warning-suppress-types '((comp)))
+
+;; --- elpaca prelude
 ;; Bootstraps elpaca and sets up the use-package integration
 
 (defvar elpaca-installer-version 0.12)
@@ -48,8 +55,12 @@
 ;; --- Standard Emacs prelude
 ;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
+(set-face-attribute 'fixed-pitch nil :height 1.0)
+(set-face-attribute 'variable-pitch nil :height 1.0)
 (if (string-equal system-type "darwin")
     (progn
+      (set-face-attribute 'fixed-pitch nil :family "Menlo")
+      (set-face-attribute 'variable-pitch nil :family ".AppleSystemUIFont")
       (setq mac-option-key-is-meta nil
             mac-command-key-is-meta t
             mac-command-modifier 'meta
@@ -241,7 +252,9 @@ numbered code content, matching what agent-shell sends to a shell."
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
+  (completion-category-overrides '((file (styles basic partial-completion))
+                                   (project-file (styles orderless basic))
+                                   (xref-location (styles orderless basic)))
 
 ;; --- marginalia
 (use-package marginalia
@@ -1051,10 +1064,7 @@ This command does not push text to `kill-ring'."
 ;; --- treesit-fold
 (use-package treesit-fold
   :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-  :bind (("C-c f ." . treesit-fold-toggle)
-         ("C-c f o" . treesit-fold-open-all)
-         ("C-c f l" . treesit-fold-close-all)
-         ("C-c . " . treesit-fold-toggle))
+  :bind (("C-c f ." . treesit-fold-toggle))
   :config
   (setq treesit-fold-line-count-show t)
   (global-treesit-fold-mode 1))
@@ -1211,12 +1221,12 @@ This command does not push text to `kill-ring'."
 (unless use-nano
   (progn
     (use-package modus-themes
-      :defer t)
+      :config
+      (load-theme 'modus-operandi t))
     (use-package spacemacs-theme
       :defer t)
     (use-package doom-themes
-      :config
-      (load-theme 'doom-one-light t))
+      :defer t)
     (use-package catppuccin-theme
       :defer t
       :init
