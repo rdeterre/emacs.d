@@ -254,7 +254,7 @@ numbered code content, matching what agent-shell sends to a shell."
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion))
                                    (project-file (styles orderless basic))
-                                   (xref-location (styles orderless basic)))
+                                   (xref-location (styles orderless basic)))))
 
 ;; --- marginalia
 (use-package marginalia
@@ -996,10 +996,7 @@ This command does not push text to `kill-ring'."
 
 ;; --- helpful
 (use-package helpful
-  :bind (([remap describe-command] . helpful-command)
-         ([remap describe-function] . helpful-callable)
-         ([remap describe-key] . helpful-key)
-         ([remap describe-variable] . helpful-variable)))
+  :bind ("C-h H" . helpful-at-point))
 
 ;; --- popper
 (use-package popper
