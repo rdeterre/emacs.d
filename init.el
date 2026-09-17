@@ -1052,6 +1052,11 @@ This command does not push text to `kill-ring'."
 (use-package rust-mode
   :mode "\\.rs")
 
+;; --- terraform
+(use-package terraform-ts-mode
+  :ensure (:host codeberg :repo "ccbash-oss/terraform-ts-mode")
+  :mode ("\\.tf\\(vars\\)?\\'" . terraform-ts-mode))
+
 ;; ;; --- smartparens
 ;; (use-package smartparens)
 
