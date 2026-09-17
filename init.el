@@ -928,6 +928,8 @@ This command does not push text to `kill-ring'."
 
 (use-package magit
   :bind (("C-x g" . magit-status))
+  :custom
+  (magit-diff-refine-hunk t)
   :config
   (define-key magit-mode-map (kbd "M-1") nil)
   (define-key magit-mode-map (kbd "M-2") nil)
