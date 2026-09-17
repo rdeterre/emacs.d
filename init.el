@@ -582,8 +582,9 @@ always prompt for an Apheleia formatter."
       (setq eglot-code-action-indicator "*"))
 
   ;; Damn .projectile file
-  (defun joaot/find-projectile-project ()
-    (let ((probe (locate-dominating-file default-directory ".projectile")))
+  (defun joaot/find-projectile-project (directory)
+    "Find a Projectile project containing DIRECTORY."
+    (let ((probe (locate-dominating-file directory ".projectile")))
       (when probe `(projectile . ,probe))))
 
   (add-hook 'project-find-functions 'joaot/find-projectile-project 'append)
