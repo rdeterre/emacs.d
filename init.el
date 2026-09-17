@@ -56,7 +56,7 @@
 ;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (set-face-attribute 'fixed-pitch nil :height 1.0)
-(set-face-attribute 'variable-pitch nil :height 1.0)
+(set-face-attribute 'variable-pitch nil :height 1.1)
 (if (string-equal system-type "darwin")
     (progn
       (set-face-attribute 'fixed-pitch nil :family "Menlo")
