@@ -881,20 +881,26 @@ This command does not push text to `kill-ring'."
 
 (global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
 
-(defun org-insert-backtick ()
-  "Insert a backtick using `org-self-insert-command'."
-  (interactive)
-  (setq last-command-event ?`)
-  (call-interactively #'org-self-insert-command))
+(use-package org
+  :ensure nil  ;; built-in
+  :config
+  (defun org-insert-backtick ()
+    "Insert a backtick using `org-self-insert-command'."
+    (interactive)
+    (setq last-command-event ?`)
+    (call-interactively #'org-self-insert-command))
 
-(defun org-insert-tilde ()
-  "Insert a tilde using `org-self-insert-command'."
-  (interactive)
-  (setq last-command-event ?~)
-  (call-interactively #'org-self-insert-command))
-
-(define-key org-mode-map (kbd "`") #'org-insert-tilde)
-(define-key org-mode-map (kbd "~") #'org-insert-backtick)
+  (defun org-insert-tilde ()
+    "Insert a tilde using `org-self-insert-command'."
+    (interactive)
+    (setq last-command-event ?~)
+    (call-interactively #'org-self-insert-command))
+  :bind
+  (:map org-mode-map
+        ("`" . org-insert-tilde)
+        ("~" . org-insert-backtick)
+        ("C-'" . nil)
+        ("C-c '" . nil)))
 
 ;; --- org-roam
 (use-package org-roam
@@ -1003,9 +1009,9 @@ This command does not push text to `kill-ring'."
 
 ;; --- popper
 (use-package popper
-  :bind (("C-`"   . popper-toggle)
-         ("M-`"   . popper-cycle)
-         ("C-M-`" . popper-toggle-type))
+  :bind (("C-'"   . popper-toggle)
+         ("M-'"   . popper-cycle)
+         ("C-M-'" . popper-toggle-type))
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
@@ -1037,13 +1043,13 @@ This command does not push text to `kill-ring'."
           (cons 'vc override)
         nil)))
   (add-hook 'project-find-functions #'project-override)
-  :bind-keymap 
+  :bind-keymap
   (("C-c p" . projectile-command-map)
-   ("s-p" . projectile-command-map)))
+   ("s-p" . projectile-command-map))
+  :bind
+  (("C-c '" . projectile-run-ghostel)))
 
 
-(global-set-key (kbd "C-'") 'projectile-run-vterm)
-(global-set-key (kbd "C-c '") 'projectile-run-vterm)
 (global-set-key (kbd "C-c C-k") 'kill-compilation)
 
 ;; --- ruff
