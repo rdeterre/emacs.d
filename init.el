@@ -998,7 +998,7 @@ This command does not push text to `kill-ring'."
   :custom
   (ghostel-keymap-exceptions
    '("C-c" "C-x" "C-u" "C-h" "M-x" "M-:" "C-\\"
-     "M-o" "M-1" "M-2" "M-3" "M-4" "M-5" "M-6")))
+     "M-o" "M-1" "M-2" "M-3" "M-4" "M-5" "M-6" "M-'")))
 
 ;; --- pdf-tools
 (use-package pdf-tools)
