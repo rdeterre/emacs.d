@@ -1,9 +1,11 @@
 ;; -*- lexical-binding: t; -*-
 
-;; --- native compilation
-;; ignore "function is not known to be defined..."
+;; --- compilation
+;; Ignore "the function ... is not known to be defined" while retaining
+;; other byte- and native-compilation warnings.
 (setq native-comp-async-report-warnings-errors 'silent
-      warning-suppress-types '((comp)))
+      warning-suppress-types '((comp))
+      byte-compile-warnings '(not unresolved))
 
 ;; --- elpaca prelude
 ;; Bootstraps elpaca and sets up the use-package integration
@@ -44,6 +46,11 @@
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+;; Elpaca rebuilds packages in fresh `emacs -Q' subprocesses, so pass the
+;; byte-compiler setting into those processes as well.
+(setq elpaca-with-emacs-env-form
+      (append elpaca-with-emacs-env-form
+              '(byte-compile-warnings '(not unresolved))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
@@ -79,8 +86,7 @@
       initial-major-mode 'org-mode
       vc-follow-symlinks t  ; suppress "follow symlink into git repo?" prompt on M-.
       visible-bell t
-      comint-scroll-to-bottom-on-output t
-      native-comp-async-report-warnings-errors 'silent) ; suppress warnings about "not-known to be defined" symbols
+      comint-scroll-to-bottom-on-output t)
 (load custom-file 'noerror)
 (global-auto-revert-mode 1)
 (setq-default fill-column 120
