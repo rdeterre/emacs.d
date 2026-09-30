@@ -1123,6 +1123,9 @@ This command does not push text to `kill-ring'."
 
 (global-set-key (kbd "C-c C-k") 'kill-compilation)
 
+;; --- repeat-mode
+(repeat-mode 1)
+
 ;; --- ruff
 (use-package flymake-ruff
   :ensure t
