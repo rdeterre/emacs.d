@@ -144,7 +144,7 @@
   :ensure (:host github :repo "xenodium/agent-shell" :ref "main")
   :after (shell-maker)
   :bind
-  (("C-c c" . agent-shell)
+  (("C-c c" . agent-shell-send-dwim)
    :map agent-shell-mode-map
    ("<tab>" . agent-shell-ui-toggle-fragment-at-point)
    ("C-c o" . my/agent-shell-open-link-at-point)
@@ -187,6 +187,22 @@ another window, according to `agent-shell-file-display-action'."
       (agent-shell-permission-allow-always permission)))
 
   (setq agent-shell-permission-responder-function #'my/agent-shell-permission-responder)
+
+  (defun my/agent-shell-send-dwim-start-new-by-default (orig-fn &optional arg)
+    "Make `agent-shell-send-dwim' start a new session without asking.
+Without a prefix ARG, start a new session directly instead of reusing or
+prompting for one.  With any prefix ARG, defer to ORIG-FN's own behavior,
+prompt included."
+    (if arg
+        (funcall orig-fn arg)
+      ;; `agent-shell--dwim' has no way to pass a session strategy through
+      ;; to `agent-shell--start', so bind the (special) global var instead.
+      ;; `agent-shell--start' snapshots it into a buffer-local value at
+      ;; creation time, so this only affects the new shell, not any
+      ;; existing ones or the `orig-fn' (prefix-arg) path above.
+      (let ((agent-shell-session-strategy 'new))
+        (agent-shell--dwim :new-shell t))))
+  (advice-add 'agent-shell-send-dwim :around #'my/agent-shell-send-dwim-start-new-by-default)
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
 ;; If other agent-shell windows exist, split below the bottommost one.
