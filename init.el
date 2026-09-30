@@ -147,12 +147,26 @@
   (("C-c c" . agent-shell)
    :map agent-shell-mode-map
    ("<tab>" . agent-shell-ui-toggle-fragment-at-point)
+   ("C-c o" . my/agent-shell-open-link-at-point)
    ("C-c C-r" . agent-shell-restart)
    ("C-c C-a" . my/agent-shell-toggle-auto-approve-permissions))
   :config
   (setq agent-shell-header-style 'text
         agent-shell-show-welcome-message nil
-        agent-shell-context-sources '(files region error))
+        agent-shell-context-sources '(files region error)
+        agent-shell-file-display-action '(display-buffer-pop-up-window))
+
+  (defun my/agent-shell-open-link-at-point ()
+    "Open the agent-shell link at point.
+
+File references such as `src/example.el:42' open at the cited line in
+another window, according to `agent-shell-file-display-action'."
+    (interactive)
+    (unless (agent-shell-markdown-link-url-at-point)
+      (user-error "No agent-shell link at point"))
+    ;; Use the link's own RET command so agent-shell remains responsible
+    ;; for parsing file locations and handling non-file links.
+    (call-interactively (key-binding (kbd "RET"))))
 
   ;; Auto-approve permission prompts by default in every new session.
   ;; Toggling it off applies only to the current session buffer.
