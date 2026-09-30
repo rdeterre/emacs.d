@@ -303,17 +303,29 @@ numbered code content, matching what agent-shell sends to a shell."
 ;; --- consult
 (defun my/consult-ripgrep-project (&optional choose-directory)
   "Incrementally search the current project with ripgrep.
-With a prefix argument, prompt for a directory to search instead."
+With a prefix argument, prompt for a directory to search instead.
+If a .rg file is present at the root of the searched directory,
+its contents are read as extra ripgrep arguments and pre-filled
+in the minibuffer ahead of the search query."
   (interactive "P")
   (require 'project)
   (require 'consult)
-  (let ((directory
-         (if choose-directory
-             (read-directory-name "Ripgrep directory: " default-directory nil t)
-           (if-let ((project (project-current nil)))
-               (project-root project)
-             (user-error "No project found for %s" default-directory)))))
-    (consult-ripgrep directory)))
+  (let* ((directory
+          (if choose-directory
+              (read-directory-name "Ripgrep directory: " default-directory nil t)
+            (if-let ((project (project-current nil)))
+                (project-root project)
+              (user-error "No project found for %s" default-directory))))
+         (rg-args-file (expand-file-name ".rg" directory))
+         (initial
+          (when (file-readable-p rg-args-file)
+            (let ((args (string-trim
+                         (with-temp-buffer
+                           (insert-file-contents rg-args-file)
+                           (buffer-string)))))
+              (unless (string-empty-p args)
+                (cons (concat " " (string-replace "\n" " " args)) 0))))))
+    (consult-ripgrep directory initial)))
 
 (use-package consult
   :bind
