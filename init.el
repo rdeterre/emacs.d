@@ -698,6 +698,51 @@ always prompt for an Apheleia formatter."
 ;; --- git auto-commit
 (use-package git-auto-commit-mode)
 
+;; --- diff-hl
+(use-package diff-hl
+  ;; Load eagerly: global-diff-hl-mode must activate before other file
+  ;; buffers are opened, or those buffers can miss their first update.
+  :demand t
+  :hook ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh)
+         (dired-mode . diff-hl-dired-mode))
+  :config
+  (global-diff-hl-mode 1)
+  (diff-hl-flydiff-mode 1))
+
+(defun my/git-default-branch ()
+  "Return the \"origin/BRANCH\" default branch for the repo at `default-directory'."
+  (let ((ref (string-trim
+              (shell-command-to-string
+               "git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null"))))
+    (if (string-match "refs/remotes/\\(origin/.+\\)" ref)
+        (match-string 1 ref)
+      (seq-find (lambda (b)
+                  (zerop (call-process "git" nil nil nil "rev-parse" "--verify" "-q" b)))
+                '("origin/main" "origin/master")))))
+
+(defun review-branch ()
+  "Show, via diff-hl in the fringe/margin, the diff between the current
+branch and its default upstream branch (e.g. origin/main)."
+  (interactive)
+  (let* ((default-directory (or (vc-git-root default-directory) default-directory))
+         (upstream (or (my/git-default-branch)
+                        (user-error "Could not determine default upstream branch")))
+         (base (string-trim (shell-command-to-string
+                              (format "git merge-base HEAD %s" (shell-quote-argument upstream))))))
+    (when (string-empty-p base)
+      (user-error "Could not find merge base with %s" upstream))
+    (diff-hl-set-reference-rev-in-project base)
+    (message "diff-hl: reviewing changes against %s (merge-base %s)" upstream (substring base 0 8))))
+(global-set-key (kbd "C-c v r") #'review-branch)
+
+(defun review-branch-reset ()
+  "Reset diff-hl to only show uncommitted changes again."
+  (interactive)
+  (diff-hl-reset-reference-rev-in-project)
+  (message "diff-hl: back to showing uncommitted changes"))
+(global-set-key (kbd "C-c v R") #'review-branch-reset)
+
 ;; --- golden-ratio-scroll-screen
 (use-package golden-ratio-scroll-screen
   :config
