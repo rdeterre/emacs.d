@@ -47,10 +47,13 @@
     (elpaca-generate-autoloads "elpaca" repo)
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 ;; Elpaca rebuilds packages in fresh `emacs -Q' subprocesses, so pass the
-;; byte-compiler setting into those processes as well.
-(setq elpaca-with-emacs-env-form
-      (append elpaca-with-emacs-env-form
-              '(byte-compile-warnings '(not unresolved))))
+;; byte-compiler setting into those processes as well. `elpaca-with-emacs-env-form'
+;; is only defined once elpaca.el itself loads, not by the autoloads file, so this
+;; must wait until after that happens.
+(with-eval-after-load 'elpaca
+  (setq elpaca-with-emacs-env-form
+        (append elpaca-with-emacs-env-form
+                '(byte-compile-warnings '(not unresolved)))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
