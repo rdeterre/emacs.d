@@ -1069,7 +1069,10 @@ This command does not push text to `kill-ring'."
      "M-o" "M-1" "M-2" "M-3" "M-4" "M-5" "M-6" "M-'")))
 
 ;; --- pdf-tools
-(use-package pdf-tools)
+(use-package pdf-tools
+  :defer t
+  :init
+  (pdf-loader-install))
 
 ;; --- helpful
 (use-package helpful
