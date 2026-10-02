@@ -193,15 +193,23 @@ another window, according to `agent-shell-file-display-action'."
 Without a prefix ARG, open the existing agent-shell buffer for the
 current project if there is one.  Otherwise, prompt for an agent type
 and open a new shell.  With any prefix ARG, defer to ORIG-FN's own
-behavior, prompt included."
-    (if arg
-        (funcall orig-fn arg)
-      (if-let* ((shell-buffer (seq-first (agent-shell-project-buffers))))
-          (funcall orig-fn)
-        (agent-shell--start :config (or (agent-shell--auto-preferred-config)
-                                        (agent-shell-select-config
-                                         :prompt "Start new agent: ")
-                                        (error "No agent config found"))))))
+behavior, prompt included.
+
+When ORIG-FN has no text to send, proceed as if `agent-shell' had
+been called instead of signaling \"No text provided to insert\"."
+    (condition-case err
+        (if arg
+            (funcall orig-fn arg)
+          (if-let* ((shell-buffer (seq-first (agent-shell-project-buffers))))
+              (funcall orig-fn)
+            (agent-shell--start :config (or (agent-shell--auto-preferred-config)
+                                            (agent-shell-select-config
+                                             :prompt "Start new agent: ")
+                                            (error "No agent config found")))))
+      (user-error
+       (if (equal (cadr err) "No text provided to insert")
+           (agent-shell arg)
+         (signal (car err) (cdr err))))))
   (advice-add 'agent-shell-send-dwim :around #'my/agent-shell-send-dwim-open-project-shell)
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
