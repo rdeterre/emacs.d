@@ -188,21 +188,21 @@ another window, according to `agent-shell-file-display-action'."
 
   (setq agent-shell-permission-responder-function #'my/agent-shell-permission-responder)
 
-  (defun my/agent-shell-send-dwim-start-new-by-default (orig-fn &optional arg)
-    "Make `agent-shell-send-dwim' start a new session without asking.
-Without a prefix ARG, start a new session directly instead of reusing or
-prompting for one.  With any prefix ARG, defer to ORIG-FN's own behavior,
-prompt included."
+  (defun my/agent-shell-send-dwim-open-project-shell (orig-fn &optional arg)
+    "Make `agent-shell-send-dwim' open the current project's shell.
+Without a prefix ARG, open the existing agent-shell buffer for the
+current project if there is one.  Otherwise, prompt for an agent type
+and open a new shell.  With any prefix ARG, defer to ORIG-FN's own
+behavior, prompt included."
     (if arg
         (funcall orig-fn arg)
-      ;; `agent-shell--dwim' has no way to pass a session strategy through
-      ;; to `agent-shell--start', so bind the (special) global var instead.
-      ;; `agent-shell--start' snapshots it into a buffer-local value at
-      ;; creation time, so this only affects the new shell, not any
-      ;; existing ones or the `orig-fn' (prefix-arg) path above.
-      (let ((agent-shell-session-strategy 'new))
-        (agent-shell--dwim :new-shell t))))
-  (advice-add 'agent-shell-send-dwim :around #'my/agent-shell-send-dwim-start-new-by-default)
+      (if-let* ((shell-buffer (seq-first (agent-shell-project-buffers))))
+          (funcall orig-fn)
+        (agent-shell--start :config (or (agent-shell--auto-preferred-config)
+                                        (agent-shell-select-config
+                                         :prompt "Start new agent: ")
+                                        (error "No agent config found"))))))
+  (advice-add 'agent-shell-send-dwim :around #'my/agent-shell-send-dwim-open-project-shell)
   ;; (defun my/agent-shell-display-buffer (buffer _alist)
 ;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
 ;; If other agent-shell windows exist, split below the bottommost one.
@@ -1122,7 +1122,8 @@ This command does not push text to `kill-ring'."
           compilation-mode
           grep-mode
           vterm-mode
-          devdocs-mode))
+          devdocs-mode)
+        popper-window-height 0.4)
   (popper-mode +1)
   (popper-echo-mode +1))
 
