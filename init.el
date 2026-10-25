@@ -62,6 +62,15 @@
   (elpaca-use-package-mode))
 (setq use-package-always-ensure t)
 
+;; --- org from main (needed for org-latex-preview)
+;; Declared before anything that touches Org, and `elpaca-wait' blocks until
+;; it is installed/activated so the built-in Org never gets loaded first.
+(use-package org
+  :defer
+  :ensure (org :repo "https://git.savannah.gnu.org/git/emacs/org-mode.git"
+               :branch "main"))
+(elpaca-wait)
+
 ;; --- Standard Emacs prelude
 ;; Changes values of some default Emacs variables
 (add-to-list 'load-path "~/.emacs.d/lisp")
@@ -986,7 +995,7 @@ This command does not push text to `kill-ring'."
 (global-set-key (kbd "M-w") 'my-smarter-kill-ring-save)
 
 (use-package org
-  :ensure nil  ;; built-in
+  :ensure nil  ;; installed from main at the top of this file
   :config
   (defun org-insert-backtick ()
     "Insert a backtick using `org-self-insert-command'."
@@ -1005,6 +1014,16 @@ This command does not push text to `kill-ring'."
         ("~" . org-insert-backtick)
         ("C-'" . nil)
         ("C-c '" . nil)))
+
+;; --- org-latex-preview
+;; See https://abode.karthinks.com/org-latex-preview/
+(use-package org-latex-preview
+  :ensure nil  ;; part of org
+  :hook (org-mode . org-latex-preview-mode)
+  :config
+  (plist-put org-latex-preview-appearance-options :page-width 0.8)
+  (setq org-latex-preview-mode-display-live t
+        org-latex-preview-mode-update-delay 0.25))
 
 ;; --- org-roam
 (use-package org-roam
