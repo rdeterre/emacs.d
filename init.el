@@ -1196,8 +1196,31 @@ This command does not push text to `kill-ring'."
   :ensure (:host codeberg :repo "ccbash-oss/terraform-ts-mode")
   :mode ("\\.tf\\(vars\\)?\\'" . terraform-ts-mode))
 
-;; ;; --- smartparens
-;; (use-package smartparens)
+;; --- delimiters
+(electric-pair-mode 1)
+
+(use-package puni
+  :hook (prog-mode . puni-mode))
+
+(defun my/org-pair-latex-delims ()
+  "Complete \\( with \\) and \\[ with \\]."
+  (when (and (memq last-command-event '(?\( ?\[))
+             (eq (char-before (1- (point))) ?\\))
+    (let ((close (if (eq last-command-event ?\() ?\) ?\])))
+      (save-excursion
+        (insert ?\\)
+        (unless (eq (char-after) close) (insert close))))))
+
+(defun my/org-electric-pair-inhibit (char)
+  "Don't pair < and > inside LaTeX fragments."
+  (or (and (memq char '(?< ?>))
+           (org-inside-LaTeX-fragment-p))
+      (electric-pair-default-inhibit char)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (setq-local electric-pair-inhibit-predicate #'my/org-electric-pair-inhibit)
+            (add-hook 'post-self-insert-hook #'my/org-pair-latex-delims 60 t)))
 
 ;; --- Tree-sitter
 (setopt treesit-enabled-modes t)
