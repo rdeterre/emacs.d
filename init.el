@@ -880,6 +880,10 @@ This command does not push text to `kill-ring'."
   :config
   (require 'markdown-ts-mode-x))
 
+(use-package markdown-ts-appear
+  :ensure t
+  :hook (markdown-ts-mode . markdown-ts-appear-mode))
+
 (defun md-to-org (start end)
   "Convert the markdown region between START and END to org-mode in place."
   (interactive "r")
