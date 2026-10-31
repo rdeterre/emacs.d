@@ -201,8 +201,8 @@ another window, according to `agent-shell-file-display-action'."
     "Make `agent-shell-send-dwim' open the current project's shell.
 Without a prefix ARG, open the existing agent-shell buffer for the
 current project if there is one.  Otherwise, prompt for an agent type
-and open a new shell.  With any prefix ARG, defer to ORIG-FN's own
-behavior, prompt included.
+and open a new shell, carrying over the selected context.  With any
+prefix ARG, defer to ORIG-FN's own behavior, prompt included.
 
 When ORIG-FN has no text to send, proceed as if `agent-shell' had
 been called instead of signaling \"No text provided to insert\"."
@@ -211,41 +211,12 @@ been called instead of signaling \"No text provided to insert\"."
             (funcall orig-fn arg)
           (if-let* ((shell-buffer (seq-first (agent-shell-project-buffers))))
               (funcall orig-fn)
-            (agent-shell--start :config (or (agent-shell--auto-preferred-config)
-                                            (agent-shell-select-config
-                                             :prompt "Start new agent: ")
-                                            (error "No agent config found")))))
+            (agent-shell--dwim :new-shell t)))
       (user-error
        (if (equal (cadr err) "No text provided to insert")
            (agent-shell arg)
          (signal (car err) (cdr err))))))
   (advice-add 'agent-shell-send-dwim :around #'my/agent-shell-send-dwim-open-project-shell)
-  ;; (defun my/agent-shell-display-buffer (buffer _alist)
-;;     "Display agent-shell BUFFER stacked vertically on the right side of the frame.
-;; If other agent-shell windows exist, split below the bottommost one.
-;; Otherwise, replace the rightmost window with the agent-shell buffer."
-;;     (let* ((shell-wins (seq-filter
-;;                         (lambda (w)
-;;                           (and (not (eq (window-buffer w) buffer))
-;;                                (with-current-buffer (window-buffer w)
-;;                                  (derived-mode-p 'agent-shell-mode))))
-;;                         (window-list)))
-;;            (bottom-win (when shell-wins
-;;                          (car (seq-sort-by #'window-top-line #'> shell-wins)))))
-;;       (if bottom-win
-;;           (let ((new-win (split-window bottom-win nil 'below)))
-;;             (set-window-buffer new-win buffer)
-;;             new-win)
-;;         (let* ((root (frame-root-window))
-;;                (right-win (or (window-in-direction 'right root t)
-;;                               (let ((wins (window-list nil nil root)))
-;;                                 (car (seq-sort-by #'window-left-column #'> wins)))))
-;;                (target (if (and right-win (not (eq right-win root)))
-;;                            right-win
-;;                          (split-window root nil 'right))))
-;;           (set-window-buffer target buffer)
-;;           target))))
-;;   (setq agent-shell-display-action '(my/agent-shell-display-buffer))
   (add-hook 'window-selection-change-functions
             (lambda (_frame)
               (when (derived-mode-p 'agent-shell-mode)
