@@ -991,10 +991,59 @@ This command does not push text to `kill-ring'."
 (use-package org-latex-preview
   :ensure nil  ;; part of org
   :hook (org-mode . org-latex-preview-mode)
+  :custom
+  ;; Set in :custom, not :config: Org checks it before `org-mode-hook' runs,
+  ;; i.e. before this package is loaded.
+  (org-startup-with-latex-preview t)
   :config
   (plist-put org-latex-preview-appearance-options :page-width 0.8)
+  ;; epsdice draws dice from EPS files; dvisvgm needs Ghostscript to render them.
+  ;; It finds libgs on its own on Linux, but not Homebrew's on macOS.
+  (unless (getenv "LIBGS")
+    (when-let* ((lib (seq-find #'file-exists-p
+                               '("/opt/homebrew/lib/libgs.dylib"     ; Apple Silicon
+                                 "/usr/local/lib/libgs.dylib"))))  ; Intel
+      (setenv "LIBGS" lib)))
+  (add-to-list 'org-latex-packages-alist '("" "epsdice" t))
   (setq org-latex-preview-mode-display-live t
         org-latex-preview-mode-update-delay 0.25))
+
+;; Filling edits whitespace in and around fragments, which marks their preview
+;; overlays as modified (hiding the image) or empties them (deleting it).
+(defun my/org-fill-latex-nobreak-p ()
+  "Non-nil when a line break at point would split a LaTeX fragment."
+  (org-inside-LaTeX-fragment-p))
+
+(defun my/org-fill-paragraph-refresh-previews (fill &rest args)
+  "Call FILL with ARGS, then re-place LaTeX previews over the filled text."
+  (if (not (bound-and-true-p org-latex-preview-mode))
+      (apply fill args)
+    (let* ((region (and (cadr args) (use-region-p)))
+           ;; Filling a partial region still fills the enclosing elements.
+           ;; On a blank line, Org fills the next element instead.
+           (bounds
+            (save-excursion
+              (when region (goto-char (region-beginning)))
+              (when (org-match-line "[ \t]*$")
+                (skip-chars-forward " \t\n"))
+              (let ((beg (or (org-element-property :begin (org-element-at-point))
+                             (point))))
+                (when region
+                  (goto-char (region-end))
+                  (skip-chars-backward " \t\n"))
+                (cons beg (or (org-element-property :end (org-element-at-point))
+                              (point))))))
+           (beg (copy-marker (car bounds)))
+           (end (copy-marker (cdr bounds) t)))
+      (unwind-protect
+          (prog1 (apply fill args)
+            (org-latex-preview--preview-region org-latex-preview-process-default beg end))
+        (set-marker beg nil)
+        (set-marker end nil)))))
+
+(advice-add 'org-fill-paragraph :around #'my/org-fill-paragraph-refresh-previews)
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'fill-nobreak-predicate #'my/org-fill-latex-nobreak-p nil t)))
 
 ;; --- org-roam
 (use-package org-roam
