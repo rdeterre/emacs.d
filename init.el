@@ -66,6 +66,8 @@
 ;; Declared before anything that touches Org, and `elpaca-wait' blocks until
 ;; it is installed/activated so the built-in Org never gets loaded first.
 (use-package org
+  :init
+  (setq org-startup-folded 'showeverything)
   :defer
   :ensure (org :repo "https://git.savannah.gnu.org/git/emacs/org-mode.git"
                :branch "main"))
@@ -1249,13 +1251,30 @@ This command does not push text to `kill-ring'."
 ;; --- Tree-sitter
 (setopt treesit-enabled-modes t)
 
-;; --- treesit-fold
+;; --- Unified folding (C-c f; C-c v is used for branch review)
+(require 'my-folding)
+
+(use-package kirigami
+  :ensure (:host github :repo "jamescherti/kirigami.el")
+  :demand t
+  :bind (("C-c f c" . kirigami-close-fold)
+         ("C-c f C" . kirigami-close-folds)
+         ("C-c f o" . kirigami-open-fold)
+         ("C-c f O" . kirigami-open-fold-rec)
+         ("C-c f r" . kirigami-open-folds)
+         ("C-c f t" . my-folding-toggle)
+         ("C-c f ." . my-folding-toggle))
+  :config
+  (my-folding-configure-kirigami))
+
 (use-package treesit-fold
   :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-  :bind (("C-c f ." . treesit-fold-toggle))
+  :demand t
   :config
   (setq treesit-fold-line-count-show t)
-  (global-treesit-fold-mode 1))
+  (require 'treesit-fold-indicators)
+  (global-treesit-fold-mode 1)
+  (my-folding-refresh-buffers))
 
 ;; --- vterm
 (use-package vterm
