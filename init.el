@@ -874,7 +874,7 @@ This command does not push text to `kill-ring'."
   :mode ("\\.md\\'" "\\.mdx\\'" "\\.markdown\\'")
   :hook (markdown-ts-mode . my-markdown-ts-variable-pitch)
   :custom
-  (markdown-ts-hide-markup t)
+  (markdown-ts-hide-markup nil)
   :bind (:map markdown-ts-mode-map
          ("C-c C-o" . push-button))
   :config
