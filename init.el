@@ -876,15 +876,33 @@ This command does not push text to `kill-ring'."
   :mode ("\\.md\\'" "\\.mdx\\'" "\\.markdown\\'")
   :hook (markdown-ts-mode . my-markdown-ts-variable-pitch)
   :custom
+  ;; Appear enables hiding locally; toggling it off restores raw Markdown.
   (markdown-ts-hide-markup nil)
+  ;; The default ● ○ ◼ glyphs are too large in variable-pitch text.
+  (markdown-ts-unordered-list-marker '(("• " . "- ")
+                                       ("◦ " . "- ")
+                                       ("▪ " . "- ")))
   :bind (:map markdown-ts-mode-map
-         ("C-c C-o" . push-button))
+         ("C-c C-o" . push-button)
+         ("C-c C-c" . markdown-ts-table-align-table))
   :config
   (require 'markdown-ts-mode-x))
 
 (use-package markdown-ts-appear
   :ensure t
-  :hook (markdown-ts-mode . markdown-ts-appear-mode))
+  :hook (markdown-ts-mode . markdown-ts-appear-mode)
+  :bind (:map markdown-ts-mode-map
+         ("C-c C-a" . markdown-ts-appear-mode))
+  :custom
+  ;; Use standard Unicode instead of requiring a Nerd Font for link icons.
+  (markdown-ts-appear-link-icon "↗")
+  (markdown-ts-appear-image-icon "▧")
+  (markdown-ts-appear-table-style 'wrapped)
+  ;; Don't mix a raw editing row with rendered rows of different widths.
+  (markdown-ts-appear-table-reveal 'table)
+  :custom-face
+  ;; Wrapped tables use their own face, independent of `markdown-ts-table'.
+  (markdown-ts-appear-table ((t (:inherit fixed-pitch)))))
 
 (defun md-to-org (start end)
   "Convert the markdown region between START and END to org-mode in place."
